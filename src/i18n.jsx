@@ -45,7 +45,7 @@ export const STRINGS = {
     moreLangs: "more languages soon",
     tour: "Tour", next: "Next", done: "Done",
     wf: { requested: "Requested", received: "Received", review: "Needs review", reviewed: "Reviewed", resub: "Resubmission requested" }, requestResub: "Request resubmission",
-    askLabel: "Ask about a case", ask: "Ask", examples: ["Which clients are missing documents?", "What did María send today?", "Summarize the review queue"], earlier: "Earlier answers", sample: "Sample", docsTitle: "Documents received", sendOffice: "Send to office", colClient: "Client", colProgress: "Progress", colFlags: "Flags", colLast: "Last activity", colActions: "Actions",
+    askLabel: "Ask about a case", ask: "Ask", examples: ["Which clients are missing documents?", "What did María send today?", "Summarize the review queue"], earlier: "Earlier answers", sample: "Sample", docsTitle: "Documents received", sendOffice: "Send to office", colClient: "Client", colProgress: "Progress", colFlags: "Flags", colLast: "Days to deadline", days: (n) => (n === 1 ? "1 day" : n < 0 ? `${-n} days late` : `${n} days`), noDeadline: "—", colActions: "Actions",
     tourSteps: [
       ["Inbox", "Each client has a 12-segment bar. Green segments are documents received over WhatsApp; the count comes from the database, not the AI."],
       ["To review", "Flags land in the review queue: legal questions the assistant refused to answer, names that don't match, bills that are too old. Resolve each one."],
@@ -96,7 +96,7 @@ export const STRINGS = {
     moreLangs: "más idiomas pronto",
     tour: "Recorrido", next: "Siguiente", done: "Listo",
     wf: { requested: "Pedido", received: "Recibido", review: "Por revisar", reviewed: "Revisado", resub: "Reenvío pedido" }, requestResub: "Pedir reenvío",
-    askLabel: "Pregunte sobre un caso", ask: "Preguntar", examples: ["¿Qué clientes tienen documentos pendientes?", "¿Qué mandó María hoy?", "Resuma la cola de revisión"], earlier: "Respuestas anteriores", sample: "Muestra", docsTitle: "Documentos recibidos", sendOffice: "Enviar a la oficina", colClient: "Cliente", colProgress: "Avance", colFlags: "Alertas", colLast: "Última actividad", colActions: "Acciones",
+    askLabel: "Pregunte sobre un caso", ask: "Preguntar", examples: ["¿Qué clientes tienen documentos pendientes?", "¿Qué mandó María hoy?", "Resuma la cola de revisión"], earlier: "Respuestas anteriores", sample: "Muestra", docsTitle: "Documentos recibidos", sendOffice: "Enviar a la oficina", colClient: "Cliente", colProgress: "Avance", colFlags: "Alertas", colLast: "Días al plazo", days: (n) => (n === 1 ? "1 día" : n < 0 ? `${-n} días tarde` : `${n} días`), noDeadline: "—", colActions: "Acciones",
     tourSteps: [
       ["Bandeja", "Cada cliente tiene una barra de 12 partes. Las verdes son documentos recibidos por WhatsApp; el conteo viene de la base de datos, no de la IA."],
       ["Para revisar", "Las alertas llegan a la cola de revisión: preguntas legales que el asistente no contestó, nombres que no coinciden, facturas muy viejas. Resuelva cada una."],

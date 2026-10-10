@@ -39,6 +39,11 @@
         "client",
         "provider"
       ]
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Next deadline the paralegal works toward (set by the office)"
     }
   },
   "required": [

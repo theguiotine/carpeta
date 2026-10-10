@@ -198,8 +198,11 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
     return openFlag ? "review" : "requested";
   };
   const flagsOf = (k) => data.escalations.filter((e) => e.case_id === k?.id && e.status === "open").length;
+  const daysTo = (k) => (k?.deadline ? Math.ceil((new Date(k.deadline + "T23:59:59") - Date.now()) / 86400000) : null);
   const sortedClients = [...data.clients].sort((a, b) => {
     const ka = caseOf(a), kb = caseOf(b);
+    const da = daysTo(ka) ?? 9999, dbb = daysTo(kb) ?? 9999;
+    if (da !== dbb) return da - dbb;
     const fa = flagsOf(ka), fb = flagsOf(kb);
     if (fb !== fa) return fb - fa;
     return (ka?.items_received || 0) / (ka?.items_total || 12) - (kb?.items_received || 0) / (kb?.items_total || 12);
@@ -321,14 +324,8 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                       </button>
                       <div className="col-span-4"><Bar rows={rows} /><div className="text-xs mt-1 font-mono font-semibold">{got} {T.of} {total}</div></div>
                       <div className="col-span-1">{flags > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">{flags}</span> : <span className="text-xs text-slate-300">0</span>}</div>
-                      <div className="col-span-1 text-[11px] text-slate-500">{fmt(c.last_activity_at)}</div>
+                      <div className="col-span-1">{(() => { const n = daysTo(k); return n === null ? <span className="text-xs text-slate-300">{T.noDeadline}</span> : <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${n < 3 ? "bg-red-100 text-red-800" : n < 7 ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>{T.days(n)}</span>; })()}</div>
                       <div className="col-span-3 flex justify-end gap-1.5 flex-wrap">
-                        <a href={`https://wa.me/?text=${encodeURIComponent(inviteFor(c))}`} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md border border-emerald-300 text-emerald-800 bg-emerald-50"><MessageCircle className="w-3.5 h-3.5" /> {T.inviteWa}</a>
-                        {c.phone && <a href={`https://wa.me/${String(c.phone).replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-xs px-2 py-1.5 rounded-md border">{T.messageWa}</a>}
-                        <button disabled={!!busy || !k || ["wiped", "delivered"].includes(c.status)}
-                          onClick={() => act("deliver", { action: "deliver", case_id: k.id }, T.confirmDeliver(c.first_name), () => exportPacket(c, k))}
-                          className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md bg-slate-900 text-white disabled:opacity-30"><Send className="w-3.5 h-3.5" /> {T.sendOffice}</button>
                         <button disabled={!!busy || !k || c.status === "wiped"} title="Delete"
                           onClick={() => act("wipe", { action: "wipe", case_id: k.id, by: "provider" }, T.confirmWipe(c.first_name))}
                           className="text-xs px-1.5 py-1.5 rounded-md border border-red-200 text-red-700 disabled:opacity-30"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -425,7 +422,6 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                 <div className="flex gap-2 flex-wrap">
                   <button onClick={() => { navigator.clipboard?.writeText(inviteText); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
                     className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border">{copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />} {T.copy}</button>
-                  <a href={`https://wa.me/?text=${encodeURIComponent(inviteText)}`} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md border text-emerald-800">{T.inviteWa}</a>
                 </div>
               </div>
             )}
