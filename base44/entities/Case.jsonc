@@ -1,0 +1,56 @@
+{
+  "name": "Case",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "process_label": {
+      "type": "string",
+      "description": "Set by the provider; the assistant never picks the process"
+    },
+    "next_appointment": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_note_for_client": {
+      "type": "string"
+    },
+    "items_total": {
+      "type": "number",
+      "default": 12
+    },
+    "items_received": {
+      "type": "number",
+      "default": 0,
+      "description": "Computed by backend functions from ChecklistItem rows, never by the model"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "wiped_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "wiped_by": {
+      "type": "string",
+      "enum": [
+        "client",
+        "provider"
+      ]
+    }
+  },
+  "required": [
+    "client_id",
+    "process_label"
+  ],
+  "rls": {
+    "read": true,
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

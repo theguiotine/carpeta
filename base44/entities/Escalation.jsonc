@@ -1,0 +1,53 @@
+{
+  "name": "Escalation",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "client_first_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "legal_question",
+        "notice_or_deadline",
+        "emergency",
+        "name_mismatch",
+        "outside_window",
+        "other"
+      ]
+    },
+    "summary_es": {
+      "type": "string"
+    },
+    "summary_en": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "answered",
+        "closed"
+      ],
+      "default": "open"
+    },
+    "provider_reply_es": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "category"
+  ],
+  "rls": {
+    "read": true,
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

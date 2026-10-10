@@ -1,0 +1,61 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "checklist_item_id": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "classified_as": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "quality_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "name_matches_client": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "no",
+        "unreadable"
+      ]
+    },
+    "document_date": {
+      "type": "string",
+      "description": "YYYY-MM-DD read from the document; no other text stored"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "retake",
+        "name_mismatch",
+        "outside_window",
+        "unknown"
+      ]
+    }
+  },
+  "required": [
+    "case_id",
+    "file_url"
+  ],
+  "rls": {
+    "read": true,
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

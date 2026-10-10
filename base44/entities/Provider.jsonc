@@ -1,0 +1,41 @@
+{
+  "name": "Provider",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "attorney",
+        "accredited_rep",
+        "clinic"
+      ],
+      "default": "attorney"
+    },
+    "email": {
+      "type": "string",
+      "description": "Where ENTREGAR packets are emailed"
+    },
+    "whatsapp_display_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ],
+  "rls": {
+    "read": true,
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "name": "ChecklistItem",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number"
+    },
+    "key": {
+      "type": "string"
+    },
+    "doc_type": {
+      "type": "string",
+      "description": "Classifier label this slot accepts"
+    },
+    "label_es": {
+      "type": "string"
+    },
+    "label_en": {
+      "type": "string"
+    },
+    "how_to_get_es": {
+      "type": "string"
+    },
+    "required": {
+      "type": "boolean",
+      "default": true
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "bring_original"
+      ],
+      "default": "photo"
+    },
+    "requested_by": {
+      "type": "string",
+      "enum": [
+        "USCIS",
+        "FIRM"
+      ]
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_read_date": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "received",
+        "needs_retake",
+        "flagged",
+        "delivered",
+        "wiped"
+      ],
+      "default": "missing"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sha256": {
+      "type": "string"
+    },
+    "retake_count": {
+      "type": "number",
+      "default": 0
+    },
+    "note_for_provider": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "key",
+    "doc_type"
+  ],
+  "rls": {
+    "read": true,
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
