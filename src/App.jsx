@@ -56,8 +56,31 @@ export default function App() {
     .filter((e) => e.status === "open")
     .sort((a, b) => (a.category === "emergency" ? -1 : 0) - (b.category === "emergency" ? -1 : 0));
 
-  const act = async (label, payload, confirmText) => {
+  // Export before wipe: the paralegal downloads a dated packet (checklist + upload log + image
+  // links) to the office's own system before ENTREGAR deletes Carpeta's copies.
+  const exportPacket = async (client, kase) => {
+    const docs = await db.Document.filter({ case_id: kase.id });
+    const rows = itemsOf(kase);
+    const esc = data.escalations.filter((e) => e.case_id === kase.id);
+    const ny = (iso) => new Date(iso).toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "medium", timeStyle: "short" });
+    const html = `<!doctype html><meta charset="utf-8"><title>Carpeta packet ${client.first_name}</title>
+<body style="font-family:sans-serif;max-width:800px;margin:24px auto">
+<p><b>Demo, datos ficticios.</b> Exported ${ny(new Date().toISOString())} ET</p>
+<h1>Carpeta packet: ${client.first_name}</h1><p>${kase.process_label} · ${kase.items_received} of ${kase.items_total} received</p>
+<h2>Checklist</h2><ol>${rows.map((r) => `<li>${r.label_es} [${r.requested_by}]: <b>${r.status}</b>${r.received_at ? " · " + ny(r.received_at) : ""}${r.sha256 ? " · sha256 " + r.sha256 : ""}</li>`).join("")}</ol>
+<h2>Upload log</h2><table border="1" cellpadding="4" style="border-collapse:collapse;font-size:12px"><tr><th>Received (ET)</th><th>Classified as</th><th>Outcome</th><th>Flags</th><th>Image</th></tr>
+${docs.sort((a, b) => String(a.created_date).localeCompare(String(b.created_date))).map((d) => `<tr><td>${ny(d.created_date)}</td><td>${d.classified_as || ""}</td><td>${d.outcome || ""}</td><td>${(d.quality_flags || []).join(", ")}</td><td><a href="${d.file_url}">image</a></td></tr>`).join("")}</table>
+<h2>Questions and flags</h2><ul>${esc.map((e) => `<li>[${e.category}] ${e.summary_en || e.summary_es} (${e.status})</li>`).join("")}</ul>
+<p>For the paralegal: review the flags. For the attorney: sign off before filing. Information, not legal advice.</p></body>`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    a.download = `carpeta-${client.first_name}-${new Date().toISOString().slice(0, 10)}.html`;
+    a.click();
+  };
+
+  const act = async (label, payload, confirmText, before) => {
     if (confirmText && !window.confirm(confirmText)) return;
+    if (before) await before();
     setBusy(label);
     try {
       const r = await api(payload);
@@ -150,7 +173,7 @@ export default function App() {
                     <span className="text-xs text-slate-400 w-28">{fmt(c.last_activity_at)}</span>
                     <code className="text-xs bg-slate-100 px-1.5 rounded" title="Código de invitación">{c.invite_code}</code>
                     <button disabled={!!busy || !k || c.status === "wiped" || c.status === "delivered"}
-                      onClick={() => act("deliver", { action: "deliver", case_id: k.id }, `¿Entregar los documentos de ${c.first_name} por correo y borrar las fotos?`)}
+                      onClick={() => act("deliver", { action: "deliver", case_id: k.id }, `¿Descargar el paquete de ${c.first_name}, mandarlo por correo y borrar las fotos de Carpeta?`, () => exportPacket(c, k))}
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-600 text-white disabled:opacity-40">
                       <Send className="w-3.5 h-3.5" /> ENTREGAR
                     </button>
