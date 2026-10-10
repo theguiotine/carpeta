@@ -231,7 +231,7 @@ export default function Stage() {
           <div><div className="text-white font-semibold text-base">{T.scanTry}</div><div className="text-slate-400 text-xs">{WA} · {T.demoCode} <b className="text-lime-300">DEMO01</b></div></div>
         </div>
         <div className="flex items-center gap-2">
-          {d.clients.slice(0, 4).map((c) => (
+          {d.clients.filter((c) => c.invite_code !== "DEMO01").slice(0, 4).map((c) => (
             <button key={c.id} onClick={() => setWho(c.invite_code)}
               className={`px-3 py-1 rounded-full text-xs ${c.invite_code === client?.invite_code ? "bg-lime-400 text-black font-semibold" : "bg-white/10"}`}>{c.first_name}</button>
           ))}

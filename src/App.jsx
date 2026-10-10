@@ -199,7 +199,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
   };
   const flagsOf = (k) => data.escalations.filter((e) => e.case_id === k?.id && e.status === "open").length;
   const daysTo = (k) => (k?.deadline ? Math.ceil((new Date(k.deadline + "T23:59:59") - Date.now()) / 86400000) : null);
-  const sortedClients = [...data.clients].sort((a, b) => {
+  const sortedClients = data.clients.filter((c) => c.invite_code !== "DEMO01").sort((a, b) => {
     const ka = caseOf(a), kb = caseOf(b);
     const da = daysTo(ka) ?? 9999, dbb = daysTo(kb) ?? 9999;
     if (da !== dbb) return da - dbb;
@@ -296,7 +296,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
           <section className="rounded-xl border bg-white shadow-sm overflow-hidden">
             <div className="flex items-baseline justify-between px-4 pt-3">
               <h2 className="text-lg font-semibold">{T.clients} <span className="text-sm font-normal text-slate-500">{T.clientsSub}</span></h2>
-              <span className="text-xs text-slate-500">{T.nClients(data.clients.length)}</span>
+              <span className="text-xs text-slate-500">{T.nClients(sortedClients.length)}</span>
             </div>
             {!loaded && <p className="text-sm text-slate-500 px-4 py-2">{T.loading}</p>}
             <div className="grid grid-cols-12 gap-2 px-4 pt-2 pb-1 text-[11px] uppercase tracking-wide text-slate-400">
