@@ -358,7 +358,7 @@ async function handler(req: Request): Promise<Response> {
     await db.Client.update(client.id, { linked_at: client.linked_at || now(), last_activity_at: now(), status: client.status === "invited" ? "active" : client.status });
     return ok({
       first_name: client.first_name,
-      reply_text: `Hola ${client.first_name}, soy Carpeta, el asistente de documentos de ${office}. No somos abogados. Su abogado/a revisa todo. Esto no es asesoría legal. Le ayudo a juntar los documentos de su lista y le paso a su abogado/a cualquier pregunta. Nunca escriba números de pasaporte, A-number ni seguro social aquí. ¿Empezamos? Responda SÍ.`,
+      reply_text: `Hola ${client.first_name}, soy Carpeta, el asistente de documentos de ${office}. No somos abogados. Su abogado/a revisa todo. Esto no es asesoría legal. Le ayudo a juntar los documentos de su lista y le paso a su abogado/a cualquier pregunta. Nunca escriba números de pasaporte, A-number ni seguro social aquí. ¿Prefiere español o English? Responda SÍ para empezar (o YES in English).`,
     });
   }
 
@@ -415,6 +415,14 @@ async function handler(req: Request): Promise<Response> {
     await db.ChecklistItem.update(item.id, { required: !!input.required });
     const { received, total } = await recount(kase.id);
     return ok({ received, total, reply_text: `${item.label_es}: ${input.required ? "pedido" : "no se pide"} (${received} de ${total})` });
+  }
+
+  if (action === "set_resub") {
+    const item = await db.ChecklistItem.get(String(input.item_id || ""));
+    if (!item || item.case_id !== kase.id) return fail("No encontré ese documento.");
+    await db.ChecklistItem.update(item.id, { note_for_provider: "resubmission_requested", status: item.status === "received" ? "missing" : item.status });
+    await recount(kase.id);
+    return ok({ reply_text: "Reenvío pedido" });
   }
 
   if (action === "set_visible") {
@@ -581,9 +589,9 @@ async function handler(req: Request): Promise<Response> {
     const { received, total } = await recount(kase.id);
     if (received >= total) {
       await db.Client.update(client.id, { status: "complete" });
-      return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}: recibidos, falta que la oficina los revise. Para enviárselos ahora escriba ENTREGAR.` });
+      return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}: recibidos, falta que la oficina los revise; recibido no significa aprobado. Para enviárselos ahora escriba ENTREGAR.` });
     }
-    return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}.` });
+    return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}. Su oficina lo revisará; recibido no significa aprobado.` });
   }
 
   if (action === "deliver") {
