@@ -65,6 +65,9 @@ Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 202
 - **The demo is public on purpose.** The paralegal page and the `invite` action are open so judges can click them with fictional data. Production puts the page behind Base44 login with row-level access per provider.
 - **Language.** The assistant answers in the client's language (Spanish by default) and translates the backend's fixed lines faithfully, keeping every count.
 
+- **Purging a WhatsApp photo (draft support request, for the app owner to send).** The Free-plan dashboard has no Files or Storage section, so a stored WhatsApp image cannot be deleted from the dashboard. Draft: *"Hi Base44 team, app 6aca56819a6ac64e08916c4a (carpeta). A WhatsApp image received by my agent on Oct 10 2026 is stored at a public media.base44.com/images/public/whatsapp/... URL. I deleted the record that referenced it, but the file is still served. It contains a government ID that should not have been uploaded. Please permanently delete that object (I can send the exact URL privately) and tell me whether WhatsApp media for agents can be stored privately or set to expire. Thank you."*
+- **Roadmap: private storage.** Base44 Core has `UploadPrivateFile` + `CreateFileSignedUrl` (expiring links). Production would copy each WhatsApp image into private storage on receipt, keep only the private `file_uri`, and show the paralegal 5-minute signed links. Not in today's demo: it adds about 1 integration credit per photo, and the original WhatsApp media URL is created by the platform, outside our control.
+
 ## Run it
 
 ```bash
