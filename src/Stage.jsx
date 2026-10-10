@@ -11,6 +11,7 @@ import { useLang, LangToggle } from "@/i18n";
 const db = base44.entities;
 // Rows kept in the database but hidden from the demo views: the walk-up QR case and a duplicate test invite.
 const HIDDEN = ["DEMO01", "8AL9YW"];
+const DEMO_CLIENTS = ["MARIA1", "LUCIA7", "JOSE42"]; // the demo list; test invites stay in the database but off screen
 const APP_URL = "https://carpeta-08916c4a.base44.app";
 const WA = "+1 978-991-5607";
 const WA_DEMO = "https://wa.me/19789915607?text=DEMO01"; // walk-up demo case, fictional
@@ -233,7 +234,7 @@ export default function Stage() {
           <div><div className="text-white font-semibold text-base">{T.scanTry}</div><div className="text-slate-400 text-xs">{WA} · {T.demoCode} <b className="text-lime-300">DEMO01</b></div></div>
         </div>
         <div className="flex items-center gap-2">
-          {d.clients.filter((c) => !HIDDEN.includes(c.invite_code)).slice(0, 4).map((c) => (
+          {d.clients.filter((c) => DEMO_CLIENTS.includes(c.invite_code)).slice(0, 4).map((c) => (
             <button key={c.id} onClick={() => setWho(c.invite_code)}
               className={`px-3 py-1 rounded-full text-xs ${c.invite_code === client?.invite_code ? "bg-lime-400 text-black font-semibold" : "bg-white/10"}`}>{c.first_name}</button>
           ))}
