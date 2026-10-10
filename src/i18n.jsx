@@ -41,7 +41,7 @@ export const STRINGS = {
     receivedReview: "received · review",
     liveNote: "Live on WhatsApp. A new phone pairs with Base44 once (a one-time code), so ask us at the table to try it.",
     tryIt: "Try it", scanTry: "Scan to try it on WhatsApp", demoCode: "demo code prefilled:",
-    stageFooter: "Built on Base44 · information, not legal advice · fictional data",
+    stageFooter: "Built with Base44 · information, not legal advice · fictional data",
     normalView: "normal view",
     moreLangs: "more languages soon",
     tour: "Tour", next: "Next", done: "Done",

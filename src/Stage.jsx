@@ -11,7 +11,7 @@ import { useLang, LangToggle } from "@/i18n";
 const db = base44.entities;
 // Rows kept in the database but hidden from the demo views: the walk-up QR case and a duplicate test invite.
 const HIDDEN = ["DEMO01", "8AL9YW"];
-const DEMO_CLIENTS = ["MARIA1", "LUCIA7", "JOSE42"]; // the demo list; test invites stay in the database but off screen
+const DEMO_CLIENTS = ["ESTEBAN1", "LUCIA7", "JOSE42"]; // the demo list; test invites stay in the database but off screen
 const APP_URL = "https://carpeta-08916c4a.base44.app";
 const WA = "+1 978-991-5607";
 const WA_DEMO = "https://wa.me/19789915607?text=DEMO01"; // walk-up demo case, fictional
@@ -62,7 +62,7 @@ function replayData(step) {
   const docs = REPLAY_ROWS.slice(0, step).map((r, i) => ({ id: "d" + i, case_id: "rc", checklist_item_id: "r" + i, outcome: "accepted", file_url: docUrl(r[3]), created_date: ts(i) }));
   const esc = step >= 6 ? [{ id: "e1", case_id: "rc", category: "legal_question", status: "open", summary_es: "¿Califico para la residencia? (pasado al abogado/a)", summary_en: "Does she qualify for a green card? (sent to the attorney)", created_date: ts(6) }] : [];
   return {
-    clients: [{ id: "rcl", first_name: "Esteban", invite_code: "MARIA1", linked_at: ts(-2), consent_at: ts(-1) }],
+    clients: [{ id: "rcl", first_name: "Esteban", invite_code: "ESTEBAN1", linked_at: ts(-2), consent_at: ts(-1) }],
     cases: [{ id: "rc", client_id: "rcl", process_label: "Permiso de trabajo (asilo pendiente), I-765 (c)(8)", items_total: 12, items_received: step }],
     items, docs, esc,
   };
@@ -72,7 +72,7 @@ const IS_REPLAY = typeof window !== "undefined" && new URLSearchParams(window.lo
 export default function Stage() {
   const [lang, setLang, T] = useLang();
   const [d, setD] = useState({ clients: [], cases: [], items: [], docs: [], esc: [] });
-  const [who, setWho] = useState("MARIA1");
+  const [who, setWho] = useState("ESTEBAN1");
   const [pulse, setPulse] = useState(0);
   const prev = useRef(null);
 

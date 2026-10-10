@@ -7,7 +7,7 @@ import { MessageCircle, RefreshCw, ChevronDown, ChevronRight, AlertTriangle, Sen
 const db = base44.entities;
 // Rows kept in the database but hidden from the demo views: the walk-up QR case and a duplicate test invite.
 const HIDDEN = ["DEMO01", "8AL9YW"];
-const DEMO_CLIENTS = ["MARIA1", "LUCIA7", "JOSE42"]; // the demo list; test invites stay in the database but off screen
+const DEMO_CLIENTS = ["ESTEBAN1", "LUCIA7", "JOSE42"]; // the demo list; test invites stay in the database but off screen
 const api = async (data) => {
   const r = await base44.functions.invoke("carpeta-api", data);
   return r?.data ?? r;
@@ -239,7 +239,6 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
           </div>
         </div>
       )}
-      <div className="bg-amber-300 text-amber-950 text-center text-xs font-semibold py-1 px-4">{T.banner}</div>
 
       <header className="max-w-6xl mx-auto px-4 pt-5 pb-1 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">

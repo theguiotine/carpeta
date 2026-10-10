@@ -15,8 +15,7 @@ const url = (f) => (REAL[f] ? `/samples/${REAL[f]}` : `/demo-docs/${f}`);
 export default function Docs() {
   return (
     <div className="min-h-screen bg-stone-50 p-4">
-      <div className="bg-amber-300 text-amber-950 text-center text-xs font-semibold py-1 px-2 rounded mb-3">Documentos ficticios para la demo · fictional test documents</div>
-      <h1 className="text-xl font-bold">Documentos de prueba</h1>
+      <h1 className="text-xl font-bold">Documentos</h1>
       <p className="text-sm text-slate-600 mb-3">Toque uno, mantenga presionada la imagen y guárdela. Luego mándela a Carpeta por WhatsApp: <b>+1 978-991-5607</b>.</p>
       <div className="grid grid-cols-2 gap-3">
         {DOCS.map(([f, label]) => (
