@@ -60,7 +60,7 @@ function replayData(step) {
   const docs = REPLAY_ROWS.slice(0, step).map((r, i) => ({ id: "d" + i, case_id: "rc", checklist_item_id: "r" + i, outcome: "accepted", file_url: "/demo-docs/" + r[3], created_date: ts(i) }));
   const esc = step >= 6 ? [{ id: "e1", case_id: "rc", category: "legal_question", status: "open", summary_es: "¿Califico para la residencia? (pasado al abogado/a)", summary_en: "Does she qualify for a green card? (sent to the attorney)", created_date: ts(6) }] : [];
   return {
-    clients: [{ id: "rcl", first_name: "María", invite_code: "MARIA1", linked_at: ts(-2), consent_at: ts(-1) }],
+    clients: [{ id: "rcl", first_name: "Esteban", invite_code: "MARIA1", linked_at: ts(-2), consent_at: ts(-1) }],
     cases: [{ id: "rc", client_id: "rcl", process_label: "Permiso de trabajo (asilo pendiente), I-765 (c)(8)", items_total: 12, items_received: step }],
     items, docs, esc,
   };
@@ -230,10 +230,7 @@ export default function Stage() {
       </main>
 
       <footer className="fixed bottom-0 inset-x-0 flex items-center justify-between gap-6 px-12 py-3 bg-black/30 text-slate-300 text-sm">
-        <div className="flex items-center gap-4">
-          <div className="bg-white p-2 rounded"><QRCodeSVG value={WA_DEMO} size={84} /></div>
-          <div><div className="text-white font-semibold text-base">{T.scanTry}</div><div className="text-slate-400 text-xs">{WA} · {T.demoCode} <b className="text-lime-300">DEMO01</b></div></div>
-        </div>
+        <div className="max-w-md text-sm text-slate-300">{T.liveNote}</div>
         <div className="flex items-center gap-2">
           {d.clients.filter((c) => DEMO_CLIENTS.includes(c.invite_code)).slice(0, 4).map((c) => (
             <button key={c.id} onClick={() => setWho(c.invite_code)}
