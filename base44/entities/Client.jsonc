@@ -52,6 +52,10 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the client can see her own document list (off by default)"
+    },
+    "verify_phrase": {
+      "type": "string",
+      "description": "Phrase the office uses in every message; the client types VERIFICAR to see it"
     }
   },
   "required": [

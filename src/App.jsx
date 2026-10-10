@@ -167,6 +167,26 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
         </button>
       </header>
 
+      <section className="max-w-6xl mx-auto px-4 mt-4">
+        <div className="rounded-2xl border-2 border-emerald-700/30 bg-white p-6 shadow-md">
+          <h2 className="text-2xl font-bold tracking-tight">Asistente del equipo (Roberto)</h2>
+          <p className="text-base text-slate-600 mt-1">Pregúntele al agente del equipo sobre sus casos. Corre en el servidor FastAPI de Roberto; Carpeta lo llama por la función de Base44.</p>
+          {chat.length > 0 && (
+            <div className="mt-4 max-h-72 overflow-y-auto space-y-2 text-base">
+              {chat.map((m, i) => (
+                <div key={i} className={`rounded-xl px-4 py-2.5 ${m.me ? "bg-emerald-50 ml-24" : m.off ? "bg-amber-50 text-amber-900 mr-24" : "bg-slate-100 mr-24"}`}>{m.text}</div>
+              ))}
+            </div>
+          )}
+          {chatBusy && <div className="text-sm text-slate-400 mt-2">pensando…</div>}
+          <form onSubmit={sendChat} className="flex gap-3 mt-4">
+            <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Ej.: ¿Qué casos tienen documentos pendientes?"
+              className="flex-1 text-lg border-2 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-600" />
+            <button disabled={chatBusy} className="text-lg px-6 py-3 rounded-xl bg-emerald-700 text-white font-semibold disabled:opacity-40">Enviar</button>
+          </form>
+        </div>
+      </section>
+
       <main className="max-w-6xl mx-auto px-4 pb-24 grid gap-6 lg:grid-cols-3 mt-4">
         {/* Clients first */}
         <section className="lg:col-span-2 space-y-3">
@@ -315,22 +335,6 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                 </div>
               </div>
             )}
-          </section>
-
-          <section className="rounded-xl border bg-white p-4 shadow-sm">
-            <h2 className="font-semibold">Asistente del equipo (Roberto)</h2>
-            <p className="text-xs text-slate-500">Pregúntele al agente del equipo sobre sus casos. Corre en el servidor FastAPI de Roberto; Carpeta lo llama por la función de Base44.</p>
-            <div className="mt-2 max-h-56 overflow-y-auto space-y-1.5 text-sm">
-              {chat.map((m, i) => (
-                <div key={i} className={`rounded-lg px-2.5 py-1.5 ${m.me ? "bg-emerald-50 ml-6" : m.off ? "bg-amber-50 text-amber-900 mr-6" : "bg-slate-100 mr-6"}`}>{m.text}</div>
-              ))}
-              {chatBusy && <div className="text-xs text-slate-400">pensando…</div>}
-            </div>
-            <form onSubmit={sendChat} className="flex gap-2 mt-2">
-              <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Ej.: ¿Qué casos tienen documentos pendientes?"
-                className="flex-1 text-sm border rounded-md px-2 py-1.5" />
-              <button disabled={chatBusy} className="text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white disabled:opacity-40">Enviar</button>
-            </form>
           </section>
 
           <section className="rounded-xl border bg-white p-4 text-sm text-slate-700 shadow-sm">

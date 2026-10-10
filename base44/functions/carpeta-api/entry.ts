@@ -302,6 +302,7 @@ async function handler(req: Request): Promise<Response> {
     const client = await db.Client.create({
       provider_id: provider?.id, first_name: first, invite_code: code, language: "es", status: "invited",
       name_on_documents: String(input.name_on_documents || "").toUpperCase(), last_activity_at: now(),
+      verify_phrase: String(input.verify_phrase || "").trim().slice(0, 80) || `${provider?.whatsapp_display_name || provider?.name || "Su oficina"} · ${code.slice(0, 3)}`,
     });
     const kase = await db.Case.create({
       client_id: client.id, process_label: String(input.process_label || "Permiso de trabajo (asilo pendiente), I-765 (c)(8)"),
@@ -349,6 +350,11 @@ async function handler(req: Request): Promise<Response> {
     if (action === "consent") reply += " Mándeme una foto a la vez, en una mesa, con buena luz.";
     if (when && input.include_appointment) reply += ` Su cita es el ${when}.`;
     return ok({ received, total, reply_text: reply });
+  }
+
+  if (action === "verify") {
+    const phrase = client.verify_phrase || `${office} · ${String(client.invite_code).slice(0, 3)}`;
+    return ok({ reply_text: `Este chat es de ${office}. La frase de verificación de su oficina es: «${phrase}». Si alguien le escribe sin esta frase, no es nuestra oficina.` });
   }
 
   if (action === "voice_status") {
