@@ -238,21 +238,12 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
       )}
       <div className="bg-amber-300 text-amber-950 text-center text-xs font-semibold py-1 px-4">{T.banner}</div>
 
-      <header className="max-w-6xl mx-auto px-4 pt-5 pb-2 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-7 h-7 text-emerald-700" />
-            <h1 className="text-2xl font-bold tracking-tight">{T.portalTitle}</h1>
-          </div>
-          <p className="text-sm text-slate-500 mt-0.5">{T.portalSub}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{provider ? `${provider.name} · ${provider.organization}` : ""}</p>
+      <header className="max-w-6xl mx-auto px-4 pt-5 pb-1 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="w-7 h-7 text-emerald-700" />
+          <h1 className="text-2xl font-bold tracking-tight">Carpeta</h1>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <LangToggle lang={lang} setLang={setLang} t={T} />
-          <button onClick={() => setTour(0)} className="text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50">❓ {T.tour}</button>
-          <a href="/?stage" className="text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-700">{T.present}</a>
-          <button onClick={load} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50"><RefreshCw className="w-4 h-4" /> {T.refresh}</button>
-        </div>
+        <LangToggle lang={lang} setLang={setLang} t={T} compact />
       </header>
 
       {/* Team assistant: a work tool, not a chat */}
@@ -301,8 +292,8 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
               <span className="text-xs text-slate-500">{T.nClients(sortedClients.length)}</span>
             </div>
             {!loaded && <p className="text-sm text-slate-500 px-4 py-2">{T.loading}</p>}
-            <div className="grid grid-cols-12 gap-2 px-4 pt-2 pb-1 text-[11px] uppercase tracking-wide text-slate-400">
-              <div className="col-span-3">{T.colClient}</div><div className="col-span-4">{T.colProgress}</div><div className="col-span-1">{T.colFlags}</div><div className="col-span-1">{T.colLast}</div><div className="col-span-3 text-right">{T.colActions}</div>
+            <div className="hidden md:grid grid-cols-12 gap-3 px-4 pt-2 pb-1 text-[11px] uppercase tracking-wide text-slate-400 whitespace-nowrap">
+              <div className="col-span-4">{T.colClient}</div><div className="col-span-4">{T.colProgress}</div><div className="col-span-1 text-center">{T.colFlags}</div><div className="col-span-2">{T.colLast}</div><div className="col-span-1"></div>
             </div>
             <div className="divide-y">
               {sortedClients.map((c) => {
@@ -316,16 +307,16 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                 const docs = docsOf(k);
                 return (
                   <div key={c.id}>
-                    <div className="px-4 py-2.5 grid grid-cols-12 items-center gap-2">
-                      <button onClick={() => setOpen(isOpen ? null : c.id)} className="col-span-3 text-left">
+                    <div className="px-4 py-2.5 grid grid-cols-6 md:grid-cols-12 items-center gap-x-3 gap-y-2">
+                      <button onClick={() => setOpen(isOpen ? null : c.id)} className="col-span-5 md:col-span-4 text-left min-w-0">
                         <div className="flex items-center gap-1 font-semibold">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}{c.first_name}
                           <span className={`ml-1 text-[10px] font-normal px-1.5 rounded-full ${pill}`}>{T.status[c.status] || c.status}</span></div>
                         <div className="text-[11px] text-slate-500 truncate pl-5">{k?.process_label}</div>
                       </button>
-                      <div className="col-span-4"><Bar rows={rows} /><div className="text-xs mt-1 font-mono font-semibold">{got} {T.of} {total}</div></div>
-                      <div className="col-span-1">{flags > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">{flags}</span> : <span className="text-xs text-slate-300">0</span>}</div>
-                      <div className="col-span-1">{(() => { const n = daysTo(k); return n === null ? <span className="text-xs text-slate-300">{T.noDeadline}</span> : <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${n < 3 ? "bg-red-100 text-red-800" : n < 7 ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>{T.days(n)}</span>; })()}</div>
-                      <div className="col-span-3 flex justify-end gap-1.5 flex-wrap">
+                      <div className="col-span-6 md:col-span-4 order-3 md:order-none"><Bar rows={rows} /><div className="text-xs mt-1 font-mono font-semibold whitespace-nowrap">{got} {T.of} {total}</div></div>
+                      <div className="col-span-3 md:col-span-1 order-4 md:order-none md:text-center whitespace-nowrap"><span className="md:hidden text-[11px] text-slate-400 mr-1">{T.colFlags}</span>{flags > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">{flags}</span> : <span className="text-xs text-slate-300">0</span>}</div>
+                      <div className="col-span-3 md:col-span-2 order-5 md:order-none whitespace-nowrap">{(() => { const n = daysTo(k); return n === null ? <span className="text-xs text-slate-300">{T.noDeadline}</span> : <span className={`inline-block whitespace-nowrap text-xs font-bold px-2.5 py-1 rounded-full ${n <= 0 ? "bg-red-600 text-white" : n < 3 ? "bg-red-100 text-red-800" : n < 7 ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>{T.days(n)}</span>; })()}</div>
+                      <div className="col-span-1 flex justify-end order-2 md:order-none">
                         <button disabled={!!busy || !k || c.status === "wiped"} title="Delete"
                           onClick={() => act("wipe", { action: "wipe", case_id: k.id, by: "provider" }, T.confirmWipe(c.first_name))}
                           className="text-xs px-1.5 py-1.5 rounded-md border border-red-200 text-red-700 disabled:opacity-30"><Trash2 className="w-3.5 h-3.5" /></button>
