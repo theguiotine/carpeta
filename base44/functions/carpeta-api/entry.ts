@@ -27,11 +27,11 @@ const ESCALATION_REPLIES: Record<string, string> = {
 
 const ITEM_TEMPLATE = [
   ["i589_receipt", "i589_receipt", "Recibo del I-589 (aviso I-797C)", "I-589 receipt notice (I-797C)", "USCIS", "Es la carta de USCIS que llegó por correo después de pedir asilo. Arriba dice I-797C."],
-  ["passport_photo_1", "passport_photo", "Foto tipo pasaporte (1 de 2)", "Passport-style photo (1 of 2)", "USCIS", "Una foto a color, fondo blanco. Tráigala también en papel a la cita."],
-  ["passport_photo_2", "passport_photo", "Foto tipo pasaporte (2 de 2)", "Passport-style photo (2 of 2)", "USCIS", "La segunda foto, igual a la primera."],
+  ["passport_photo_1", "passport_photo", "Primera foto tipo pasaporte", "Passport-style photo (1 of 2)", "USCIS", "Una foto a color, fondo blanco. Tráigala también en papel a la cita."],
+  ["passport_photo_2", "passport_photo", "Segunda foto tipo pasaporte", "Passport-style photo (2 of 2)", "USCIS", "La segunda foto, igual a la primera."],
   ["lease", "lease", "Contrato de renta", "Lease", "FIRM", "El contrato del lugar donde vive, la página con su nombre y la dirección."],
-  ["paystub_1", "paystub", "Talón de pago (1 de 2)", "Pay stub (1 of 2)", "FIRM", "El papel que viene con el pago. Su abogado/a lo pidió para su expediente."],
-  ["paystub_2", "paystub", "Talón de pago (2 de 2)", "Pay stub (2 of 2)", "FIRM", "El talón de pago más reciente."],
+  ["paystub_1", "paystub", "Primer talón de pago", "Pay stub (1 of 2)", "FIRM", "El papel que viene con el pago. Su abogado/a lo pidió para su expediente."],
+  ["paystub_2", "paystub", "Segundo talón de pago", "Pay stub (2 of 2)", "FIRM", "El talón de pago más reciente."],
   ["utility_bill", "utility_bill", "Factura de luz o gas (de los últimos 90 días)", "Utility bill (last 90 days)", "FIRM", "Una factura reciente con su nombre y dirección."],
   ["school_letter", "school_letter", "Carta de la escuela", "School letter", "FIRM", "Una carta de la escuela de sus hijos, si la tiene."],
   ["clinic_letter", "clinic_letter", "Carta de la clínica", "Clinic letter", "FIRM", "Una carta de la clínica donde la atienden. No hace falta información médica."],
