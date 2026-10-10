@@ -267,6 +267,23 @@ async function handler(req: Request): Promise<Response> {
     return ok({ reply_text: "Seeded 3 fictional clients", provider_id: provider.id });
   }
 
+  // ---------- team agent chat proxy (Roberto's FastAPI), server-side to avoid CORS ----------
+  if (action === "team_chat") {
+    const url = Deno.env.get("TEAM_CHAT_URL");
+    if (!url) return fail("El asistente del equipo no está conectado.");
+    try {
+      const res = await fetch(url, {
+        method: "POST", headers: { "content-type": "application/json", "ngrok-skip-browser-warning": "1" },
+        body: JSON.stringify({ message: String(input.message || "").slice(0, 1000), attorney_id: "test" }),
+        signal: AbortSignal.timeout(25000),
+      });
+      const out = await res.json();
+      return ok({ reply_text: String(out.reply || out.answer || "(sin respuesta)") });
+    } catch {
+      return fail("El asistente de Roberto está desconectado ahora mismo.");
+    }
+  }
+
   // ---------- invite a new client (from the paralegal page) ----------
   if (action === "invite") {
     const first = String(input.first_name || "").trim().split(/\s+/)[0].slice(0, 30);
@@ -406,7 +423,7 @@ async function handler(req: Request): Promise<Response> {
           body: JSON.stringify({ file_url: fileUrl, doc_types: DOC_TYPES }),
           signal: AbortSignal.timeout(20000),
         });
-        if (res.ok) cls = await res.json();
+        if (res.ok) { cls = await res.json(); if (cls && cls.classified_as) cls._by = "roberto"; else cls = null; }
       } catch { /* fall back to InvokeLLM */ }
     }
     if (!cls && !forced) {
@@ -438,6 +455,7 @@ async function handler(req: Request): Promise<Response> {
       case_id: kase.id, file_url: fileUrl, classified_as: type,
       confidence: Number(cls?.confidence ?? 1), quality_flags: flags,
       name_matches_client: nameMatch, document_date: String(cls?.document_date || ""),
+      classified_by: forced ? "client_pick" : input.cached_classification ? "cache" : cls?._by || "base44_invokellm",
     });
     await touch(client);
 

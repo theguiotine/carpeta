@@ -49,6 +49,24 @@ export default function App() {
   const [newName, setNewName] = useState("");
   const [invite, setInvite] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [chat, setChat] = useState([]);
+  const [chatMsg, setChatMsg] = useState("");
+  const [chatBusy, setChatBusy] = useState(false);
+  const sendChat = async (e) => {
+    e.preventDefault();
+    const m = chatMsg.trim();
+    if (!m) return;
+    setChat((c) => [...c, { me: true, text: m }]);
+    setChatMsg("");
+    setChatBusy(true);
+    try {
+      const out = await api({ action: "team_chat", message: m });
+      setChat((c) => [...c, { me: false, text: out?.reply_text || "(sin respuesta)", off: out?.ok === false }]);
+    } catch {
+      setChat((c) => [...c, { me: false, text: "El asistente de Roberto está desconectado ahora mismo.", off: true }]);
+    }
+    setChatBusy(false);
+  };
 
   const load = useCallback(async () => {
     const [providers, clients, cases, items, escalations, docs] = await Promise.all([
@@ -297,6 +315,22 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                 </div>
               </div>
             )}
+          </section>
+
+          <section className="rounded-xl border bg-white p-4 shadow-sm">
+            <h2 className="font-semibold">Asistente del equipo (Roberto)</h2>
+            <p className="text-xs text-slate-500">Pregúntele al agente del equipo sobre sus casos. Corre en el servidor FastAPI de Roberto; Carpeta lo llama por la función de Base44.</p>
+            <div className="mt-2 max-h-56 overflow-y-auto space-y-1.5 text-sm">
+              {chat.map((m, i) => (
+                <div key={i} className={`rounded-lg px-2.5 py-1.5 ${m.me ? "bg-emerald-50 ml-6" : m.off ? "bg-amber-50 text-amber-900 mr-6" : "bg-slate-100 mr-6"}`}>{m.text}</div>
+              ))}
+              {chatBusy && <div className="text-xs text-slate-400">pensando…</div>}
+            </div>
+            <form onSubmit={sendChat} className="flex gap-2 mt-2">
+              <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Ej.: ¿Qué casos tienen documentos pendientes?"
+                className="flex-1 text-sm border rounded-md px-2 py-1.5" />
+              <button disabled={chatBusy} className="text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white disabled:opacity-40">Enviar</button>
+            </form>
           </section>
 
           <section className="rounded-xl border bg-white p-4 text-sm text-slate-700 shadow-sm">

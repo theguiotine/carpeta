@@ -44,6 +44,10 @@
         "outside_window",
         "unknown"
       ]
+    },
+    "classified_by": {
+      "type": "string",
+      "description": "Which classifier filed it: roberto, base44_invokellm, client_pick, cache"
     }
   },
   "required": [
