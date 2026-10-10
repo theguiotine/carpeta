@@ -33,7 +33,8 @@ const CHIP = {
   other: ["REVISAR", "bg-slate-300 text-black"],
 };
 const SEG = { received: "bg-lime-400", delivered: "bg-lime-500", needs_retake: "bg-amber-400", flagged: "bg-amber-400" };
-const hhmm = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-US", { hour: "numeric", minute: "2-digit" }) : "");
+const utcS = (iso) => (iso && !/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso + "Z" : iso);
+const hhmm = (iso) => (iso ? new Date(utcS(iso)).toLocaleTimeString("es-US", { hour: "numeric", minute: "2-digit" }) : "");
 const serif = { fontFamily: "Georgia, 'Times New Roman', serif" };
 
 // Offline replay (?stage&replay): a scripted 12-document run built in the browser, no database calls,

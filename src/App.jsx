@@ -35,8 +35,10 @@ const OUTCOME = { accepted: "aceptado", retake: "repetir foto", name_mismatch: "
 
 const WF_CLS = { requested: "bg-slate-100 text-slate-600", received: "bg-sky-100 text-sky-800", review: "bg-amber-100 text-amber-900", reviewed: "bg-emerald-100 text-emerald-800", resub: "bg-orange-100 text-orange-900" };
 
+// Base44 timestamps come without a zone suffix but are UTC.
+const utc = (iso) => (iso && !/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso + "Z" : iso);
 const fmt = (iso) =>
-  iso ? new Date(iso).toLocaleString(document.documentElement.lang === "es" ? "es-US" : "en-US", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
+  iso ? new Date(utc(iso)).toLocaleString(document.documentElement.lang === "es" ? "es-US" : "en-US", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
 
 function Bar({ rows }) {
   const list = rows.length ? rows : Array.from({ length: 12 }, () => ({ status: "missing" }));
