@@ -98,6 +98,7 @@ function TeamPanel({ T }) {
 
 export default function App() {
   const [lang, setLang, T] = useLang();
+  const [tour, setTour] = useState(-1);
   const [data, setData] = useState({ providers: [], clients: [], cases: [], items: [], escalations: [], docs: [] });
   const [open, setOpen] = useState(null);
   const [busy, setBusy] = useState("");
@@ -208,6 +209,20 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-900">
+      {tour >= 0 && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setTour(-1)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="text-xs text-slate-500">{tour + 1} / {T.tourSteps.length}</div>
+            <h3 className="text-xl font-bold mt-1">{T.tourSteps[tour][0]}</h3>
+            <p className="text-slate-700 mt-2">{T.tourSteps[tour][1]}</p>
+            <div className="flex justify-end gap-2 mt-5">
+              <button onClick={() => setTour(tour + 1 < T.tourSteps.length ? tour + 1 : -1)} className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-semibold">
+                {tour + 1 < T.tourSteps.length ? T.next : T.done}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="bg-amber-300 text-amber-950 text-center text-xs font-semibold py-1 px-4">
         {T.banner}
       </div>
@@ -222,6 +237,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
           <p className="text-xs text-slate-500 mt-1">{provider ? `${provider.name} · ${provider.organization}` : ""}</p>
         </div>
         <LangToggle lang={lang} setLang={setLang} t={T} />
+        <button onClick={() => setTour(0)} className="text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50">❓ {T.tour}</button>
         <a href="/?stage" className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-700">{T.present}</a>
         <button onClick={load} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50">
           <RefreshCw className="w-4 h-4" /> {T.refresh}

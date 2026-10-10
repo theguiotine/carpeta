@@ -32,6 +32,36 @@ const SEG = { received: "bg-lime-400", delivered: "bg-lime-500", needs_retake: "
 const hhmm = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-US", { hour: "numeric", minute: "2-digit" }) : "");
 const serif = { fontFamily: "Georgia, 'Times New Roman', serif" };
 
+// Offline replay (?stage&replay): a scripted 12-document run built in the browser, no database calls,
+// so the demo survives dead wifi. Space or click starts it; it loops.
+const REPLAY_ROWS = [
+  ["i589_receipt", "Recibo del I-589 (aviso I-797C)", "I-589 receipt notice (I-797C)", "01-I-797C-receipt-I-589.png"],
+  ["passport_photo", "Primera foto tipo pasaporte", "Passport-style photo (1 of 2)", "02-photo-1.png"],
+  ["passport_photo", "Segunda foto tipo pasaporte", "Passport-style photo (2 of 2)", "03-photo-2.png"],
+  ["lease", "Contrato de renta", "Lease", "04-lease.png"],
+  ["paystub", "Primer talón de pago", "Pay stub (1 of 2)", "05-paystub-aug.png"],
+  ["paystub", "Segundo talón de pago", "Pay stub (2 of 2)", "06-paystub-sep.png"],
+  ["utility_bill", "Factura de luz o gas (de los últimos 90 días)", "Utility bill (last 90 days)", "07-utility-bill-sep.png"],
+  ["school_letter", "Carta de la escuela", "School letter", "08-school-letter.png"],
+  ["clinic_letter", "Carta de la clínica", "Clinic letter", "09-clinic-letter.png"],
+  ["church_letter", "Carta de la iglesia o parroquia", "Church or parish letter", "10-church-letter.png"],
+  ["prior_ead", "Permiso de trabajo anterior (si tiene)", "Prior work permit (if any)", "11-prior-EAD.png"],
+  ["i589_copy", "Copia del I-589 (primera página)", "I-589 copy (first page)", "12-I-589-first-page.png"],
+];
+function replayData(step) {
+  const t0 = Date.now() - 60000;
+  const ts = (i) => new Date(t0 + i * 4000).toISOString();
+  const items = REPLAY_ROWS.map((r, i) => ({ id: "r" + i, case_id: "rc", order: i + 1, doc_type: r[0], label_es: r[1], label_en: r[2], status: i < step ? "received" : "missing" }));
+  const docs = REPLAY_ROWS.slice(0, step).map((r, i) => ({ id: "d" + i, case_id: "rc", checklist_item_id: "r" + i, outcome: "accepted", file_url: "/demo-docs/" + r[3], created_date: ts(i) }));
+  const esc = step >= 6 ? [{ id: "e1", case_id: "rc", category: "legal_question", status: "open", summary_es: "¿Califico para la residencia? (pasado al abogado/a)", summary_en: "Does she qualify for a green card? (sent to the attorney)", created_date: ts(6) }] : [];
+  return {
+    clients: [{ id: "rcl", first_name: "María", invite_code: "MARIA1", linked_at: ts(-2), consent_at: ts(-1) }],
+    cases: [{ id: "rc", client_id: "rcl", process_label: "Permiso de trabajo (asilo pendiente), I-765 (c)(8)", items_total: 12, items_received: step }],
+    items, docs, esc,
+  };
+}
+const IS_REPLAY = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("replay");
+
 export default function Stage() {
   const [lang, setLang, T] = useLang();
   const [d, setD] = useState({ clients: [], cases: [], items: [], docs: [], esc: [] });
@@ -46,7 +76,25 @@ export default function Stage() {
     setD({ clients, cases, items, docs, esc });
   }, []);
 
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(false);
   useEffect(() => {
+    if (!IS_REPLAY) return;
+    REPLAY_ROWS.forEach((r) => { const im = new Image(); im.src = "/demo-docs/" + r[3]; }); // preload
+    const start = (e) => { if (!e || e.type === "click" || e.code === "Space") { setPlaying(true); setStep(0); } };
+    window.addEventListener("keydown", start);
+    window.addEventListener("click", start);
+    return () => { window.removeEventListener("keydown", start); window.removeEventListener("click", start); };
+  }, []);
+  useEffect(() => {
+    if (!IS_REPLAY || !playing) return;
+    const t = setTimeout(() => setStep((n) => (n >= 12 ? 0 : n + 1)), step >= 12 ? 7000 : 2600);
+    return () => clearTimeout(t);
+  }, [IS_REPLAY, playing, step]);
+  useEffect(() => { if (IS_REPLAY) setD(replayData(step)); }, [step]);
+
+  useEffect(() => {
+    if (IS_REPLAY) return;
     load();
     let timer = null;
     const soon = () => { clearTimeout(timer); timer = setTimeout(load, 800); }; // one reload per burst of events
@@ -73,6 +121,7 @@ export default function Stage() {
   }, [got, total, kase]);
 
   const resolve = async (e) => {
+    if (IS_REPLAY) return;
     await base44.functions.invoke("carpeta-api", { action: "resolve", case_id: e.case_id, escalation_id: e.id });
     load();
   };
@@ -98,6 +147,9 @@ export default function Stage() {
         .fade-up { animation: fadeUp .4s ease-out both }
       `}</style>
 
+      {IS_REPLAY && !playing && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-lime-400 text-black text-sm font-semibold px-4 py-1.5 rounded-full">Replay · press Space or click to start</div>
+      )}
       <header className="px-12 pt-8">
         <div className="flex items-center gap-3">
           <FolderOpen className="w-10 h-10" style={{ color: LIME }} />

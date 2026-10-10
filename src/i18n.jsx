@@ -43,6 +43,13 @@ export const STRINGS = {
     stageFooter: "Built on Base44 · information, not legal advice · fictional data",
     normalView: "normal view",
     moreLangs: "more languages soon",
+    tour: "Tour", next: "Next", done: "Done",
+    tourSteps: [
+      ["Inbox", "Each client has a 12-segment bar. Green segments are documents received over WhatsApp; the count comes from the database, not the AI."],
+      ["To review", "Flags land in the review queue: legal questions the assistant refused to answer, names that don't match, bills that are too old. Resolve each one."],
+      ["Requested / not requested", "Open a client to see the 12 items. The attorney decides what is asked for: switch any item between requested and not requested, and the count adjusts."],
+      ["Done, send it", "Deliver downloads a dated packet for the office, then deletes Carpeta's copies of the photos. Only the status and a fingerprint remain."],
+    ],
     tbTitle: "Team backend (Roberto)", tbSub: "Read-only view of Roberto's FastAPI data. Phones show the last 4 digits only.", tbClients: "Clients", tbQueue: "Review queue", tbDocs: "Documents", tbNone: "None yet.", tbOffline: "Offline, showing cached data", tbUpdated: "Updated", tbHearing: "hearing",
   },
   es: {
@@ -85,6 +92,13 @@ export const STRINGS = {
     stageFooter: "Hecho en Base44 · información, no asesoría legal · datos ficticios",
     normalView: "vista normal",
     moreLangs: "más idiomas pronto",
+    tour: "Recorrido", next: "Siguiente", done: "Listo",
+    tourSteps: [
+      ["Bandeja", "Cada cliente tiene una barra de 12 partes. Las verdes son documentos recibidos por WhatsApp; el conteo viene de la base de datos, no de la IA."],
+      ["Para revisar", "Las alertas llegan a la cola de revisión: preguntas legales que el asistente no contestó, nombres que no coinciden, facturas muy viejas. Resuelva cada una."],
+      ["Se pide / no se pide", "Abra un cliente para ver los 12 documentos. El abogado/a decide qué se pide: cambie cualquier documento entre se pide y no se pide, y el conteo se ajusta."],
+      ["Listo, entréguelo", "Entregar descarga un paquete con fecha para la oficina y luego borra las copias de las fotos en Carpeta. Solo quedan el estado y una huella."],
+    ],
     tbTitle: "Backend del equipo (Roberto)", tbSub: "Vista de solo lectura de los datos del FastAPI de Roberto. Los teléfonos muestran solo los últimos 4 dígitos.", tbClients: "Clientes", tbQueue: "Cola de revisión", tbDocs: "Documentos", tbNone: "Nada todavía.", tbOffline: "Sin conexión, mostrando datos guardados", tbUpdated: "Actualizado", tbHearing: "audiencia",
   },
 };
