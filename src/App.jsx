@@ -89,7 +89,8 @@ export default function App() {
           <p className="text-sm text-slate-600 mt-1">
             {provider ? `${provider.name} · ${provider.organization}` : "Cargando…"}
           </p>
-          <p className="text-xs text-slate-500">Sus clientes juntan documentos por WhatsApp. Usted ve el avance aquí.</p>
+          <p className="text-sm font-semibold text-slate-700 mt-1">Bandeja del paralegal · Paralegal inbox</p>
+          <p className="text-xs text-slate-500">Los clientes juntan documentos por WhatsApp; el paralegal revisa aquí y el abogado/a firma.</p>
         </div>
         <button onClick={load} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded border bg-white hover:bg-slate-100">
           <RefreshCw className="w-4 h-4" /> Actualizar
@@ -99,7 +100,7 @@ export default function App() {
       <main className="max-w-5xl mx-auto px-4 pb-24 space-y-6">
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">
-            Preguntas para usted ({openEsc.length})
+            Preguntas y alertas ({openEsc.length})
           </h2>
           {openEsc.length === 0 && <p className="text-sm text-slate-500">Nada pendiente.</p>}
           <ul className="space-y-2">
@@ -187,7 +188,7 @@ export default function App() {
 
         <section className="rounded-lg border bg-white p-4 text-sm text-slate-700">
           <p className="font-semibold">Cómo funciona</p>
-          <p>La oficina le da a su cliente un código. El cliente lo escribe en WhatsApp y Carpeta le pide los documentos de la lista, uno por uno. El conteo viene de la base de datos, no del modelo. Toda pregunta legal se la pasa a usted. ENTREGAR le manda el paquete por correo y borra las fotos; quedan solo el estado y una huella sha256.</p>
+          <p>El paralegal hace el 80% del trabajo de juntar y revisar documentos; Carpeta lo hace más rápido y fácil de verificar, y el abogado/a solo firma. La oficina le da a su cliente un código. El cliente lo escribe en WhatsApp y Carpeta le pide los documentos de la lista, uno por uno. El conteo viene de la base de datos, no del modelo. Toda pregunta legal se la pasa a usted. ENTREGAR le manda el paquete por correo y borra las fotos; quedan solo el estado y una huella sha256.</p>
         </section>
       </main>
 

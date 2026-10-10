@@ -402,7 +402,7 @@ export default async function (req: Request): Promise<Response> {
       `<p>${received} of ${total} received.</p><ol>${lines}</ol>` +
       (esc ? `<p>Open questions and flags:</p><ul>${esc}</ul>` : "") +
       `<p>Fee note for the provider (I-765 (c)(8)): $560 if postmarked by Thu Oct 15 2026; $570 from Fri Oct 16 2026. Confirm on federalregister.gov.</p>` +
-      `<p>Information, not legal advice. The provider picks the process and reviews every document.</p>`;
+      `<p>For the paralegal: review the flags above. For the attorney: sign off before filing. Information, not legal advice; the attorney picks the process.</p>`;
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: provider.email,

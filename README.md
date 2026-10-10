@@ -16,7 +16,7 @@ With Carpeta, her provider (an attorney, an accredited representative, or a free
 5. Any legal question ("¿Califico?", "¿Puedo viajar?") gets a fixed refusal and lands on the provider's page as a one-line escalation. Emergencies (ICE at the door) get a fixed safety message and are pinned in red.
 6. **ENTREGAR** emails the packet index to the provider, then deletes the photos; only status, time and a sha256 fingerprint remain. **BORRAR TODO** wipes everything she sent.
 
-The provider sees every client on one page: progress bar "N de 12", status, open questions, and ENTREGAR / BORRAR buttons.
+**Who it is for.** Three roles: the client (María), the paralegal, and the attorney. Our assumption is that about 80% of document work is the paralegal's; Carpeta makes it faster and easier to cross-check, so the attorney only signs off. The paralegal sees every client on one page ("Bandeja del paralegal"): progress bar "N de 12", status, open questions, and ENTREGAR / BORRAR buttons.
 
 ## The legal line (unauthorized practice of law)
 
