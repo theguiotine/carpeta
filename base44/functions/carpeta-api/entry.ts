@@ -143,6 +143,10 @@ async function handler(req: Request): Promise<Response> {
   // {results:[{toolCallId, result}]} with a flat one-line string, always HTTP 200.
   if (input?.message?.type === "tool-calls" && Array.isArray(input.message.toolCallList)) {
     const results = [];
+    const shared = Deno.env.get("VAPI_SHARED_KEY");
+    if (shared && req.headers.get("x-carpeta-key") !== shared) {
+      return Response.json({ results: input.message.toolCallList.map((c: any) => ({ toolCallId: c.id, error: "No autorizado." })) });
+    }
     for (const call of input.message.toolCallList) {
       let args: any = call?.function?.arguments ?? {};
       if (typeof args === "string") { try { args = JSON.parse(args); } catch { args = {}; } }
