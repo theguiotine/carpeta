@@ -26,7 +26,7 @@ The assistant only repeats what the provider's case record already says. It neve
 
 - WhatsApp Business traffic is decrypted by Meta at its endpoint and held up to 30 days. We do not call this "end-to-end encrypted".
 - Photos are read by Base44's LLM provider for classification; its retention was not verified.
-- ENTREGAR and BORRAR delete our records. Whether a deleted file's URL stops resolving at the storage layer is being tested; until then we say "we delete our records", not "nothing is retained".
+- ENTREGAR and BORRAR delete our records. **Tested Oct 10: after a record is deleted, the photo's Base44 media URL still resolves.** So we say "we delete our records", never "nothing is retained"; a storage-level purge is on the roadmap.
 - What we cannot delete: the copy in her own WhatsApp.
 
 ## Base44 coverage scorecard (the 20% "thoughtful use")
