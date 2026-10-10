@@ -396,7 +396,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
             <h2 className="text-lg font-semibold">{T.docsTitle}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
               {(accepted.length ? accepted.map((d) => ({ url: d.file_url, label: labelFor(d), who: nameOfCase(d.case_id), sample: false }))
-                : SAMPLE.map(([f, label]) => ({ url: `/samples/${f}`, label: lang === "en" ? label[0] : label[1], who: "María", sample: false }))).map((x, i) => (
+                : SAMPLE.map(([f, label]) => ({ url: `/samples/${f}`, label: lang === "en" ? label[0] : label[1], who: "Esteban", sample: false }))).map((x, i) => (
                 <a key={i} href={x.url} target="_blank" rel="noreferrer" className="block rounded-lg border overflow-hidden bg-stone-50">
                   <div className="relative"><img src={x.url} alt="" className="w-full h-48 object-cover object-top" />
                     </div>
