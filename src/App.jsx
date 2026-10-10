@@ -257,12 +257,10 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
       <section className="max-w-6xl mx-auto px-4 mt-3">
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">{T.teamTitle}</h2>
+            <h2 className="text-lg font-semibold">{T.askLabel}</h2>
             <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-900 text-white">{T.teamTag}</span>
           </div>
-          <p className="text-xs text-slate-500">{T.teamSub}</p>
           <form onSubmit={sendChat} className="mt-3">
-            <label className="text-xs font-semibold text-slate-600" htmlFor="ask">{T.askLabel}</label>
             <div className="flex gap-2 mt-1">
               <input id="ask" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder={T.teamPh}
                 className="flex-1 text-base border rounded-md px-3 py-2 font-mono focus:outline-none focus:border-slate-900" />
@@ -431,7 +429,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
       </main>
 
       <footer className="fixed bottom-0 inset-x-0 bg-white/95 border-t text-center text-xs text-slate-600 py-2 px-4">
-        {T.footer} <Base44Logo className="inline w-3 h-3" /> Base44
+        {T.footer}
       </footer>
     </div>
   );
