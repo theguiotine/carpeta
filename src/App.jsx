@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Base44Logo } from "@/components/Base44Logo";
+import { useLang, LangToggle } from "@/i18n";
 import { RefreshCw, ChevronDown, ChevronRight, AlertTriangle, Send, Trash2, FolderOpen, UserPlus, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 const db = base44.entities;
@@ -30,7 +31,7 @@ const CAT = {
 const OUTCOME = { accepted: "aceptado", retake: "repetir foto", name_mismatch: "nombre distinto", outside_window: "fecha vieja", unknown: "sin clasificar" };
 
 const fmt = (iso) =>
-  iso ? new Date(iso).toLocaleString("es-US", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
+  iso ? new Date(iso).toLocaleString(document.documentElement.lang === "es" ? "es-US" : "en-US", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
 
 function Bar({ rows }) {
   const list = rows.length ? rows : Array.from({ length: 12 }, () => ({ status: "missing" }));
@@ -42,6 +43,7 @@ function Bar({ rows }) {
 }
 
 export default function App() {
+  const [lang, setLang, T] = useLang();
   const [data, setData] = useState({ providers: [], clients: [], cases: [], items: [], escalations: [], docs: [] });
   const [open, setOpen] = useState(null);
   const [busy, setBusy] = useState("");
@@ -61,9 +63,9 @@ export default function App() {
     setChatBusy(true);
     try {
       const out = await api({ action: "team_chat", message: m });
-      setChat((c) => [...c, { me: false, text: out?.reply_text || "(sin respuesta)", off: out?.ok === false }]);
+      setChat((c) => [...c, { me: false, text: out?.reply_text || T.noReply, off: out?.ok === false }]);
     } catch {
-      setChat((c) => [...c, { me: false, text: "El asistente de Roberto está desconectado ahora mismo.", off: true }]);
+      setChat((c) => [...c, { me: false, text: T.teamOff, off: true }]);
     }
     setChatBusy(false);
   };
@@ -79,8 +81,12 @@ export default function App() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    // Realtime first (debounced), slow poll as a fallback: keeps a public demo under Base44's rate limit.
+    let timer = null;
+    const soon = () => { clearTimeout(timer); timer = setTimeout(load, 1200); };
+    const subs = [db.Document, db.ChecklistItem, db.Escalation, db.Client, db.Case].map((e) => e.subscribe(soon));
+    const t = setInterval(() => { if (!document.hidden) load(); }, 30000);
+    return () => { clearInterval(t); clearTimeout(timer); subs.forEach((u) => typeof u === "function" && u()); };
   }, [load]);
 
   const provider = data.providers[0];
@@ -149,29 +155,30 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
   return (
     <div className="min-h-screen bg-stone-50 text-slate-900">
       <div className="bg-amber-300 text-amber-950 text-center text-xs font-semibold py-1 px-4">
-        Demo · todos los datos son ficticios · fictional data only
+        {T.banner}
       </div>
 
       <header className="max-w-6xl mx-auto px-4 pt-6 pb-2 flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <FolderOpen className="w-7 h-7 text-emerald-700" />
-            <h1 className="text-2xl font-bold tracking-tight">Carpeta · Bandeja del paralegal</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{T.portalTitle}</h1>
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">Paralegal inbox · clients send documents over WhatsApp, the paralegal reviews, the attorney signs off.</p>
+          <p className="text-sm text-slate-500 mt-0.5">{T.portalSub}</p>
           <p className="text-xs text-slate-500 mt-1">{provider ? `${provider.name} · ${provider.organization}` : ""}</p>
         </div>
-        <a href="/?stage" className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-700">▶ Modo presentación</a>
+        <LangToggle lang={lang} setLang={setLang} t={T} />
+        <a href="/?stage" className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-700">{T.present}</a>
         <button onClick={load} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50">
-          <RefreshCw className="w-4 h-4" /> Actualizar
+          <RefreshCw className="w-4 h-4" /> {T.refresh}
         </button>
       </header>
 
       <section className="max-w-6xl mx-auto px-4 mt-4">
         <div className="rounded-2xl border-2 border-emerald-700/30 bg-white p-6 shadow-md">
-          <h2 className="text-2xl font-bold tracking-tight">Asistente del equipo (Roberto)</h2>
-          <span className="inline-block mt-1 text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-slate-900 text-white">Uso interno del equipo</span>
-          <p className="text-base text-slate-600 mt-1">Pregúntele al agente del equipo sobre sus casos. Corre en el servidor FastAPI de Roberto; Carpeta lo llama por la función de Base44.</p>
+          <h2 className="text-2xl font-bold tracking-tight">{T.teamTitle}</h2>
+          <span className="inline-block mt-1 text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-slate-900 text-white">{T.teamTag}</span>
+          <p className="text-base text-slate-600 mt-1">{T.teamSub}</p>
           {chat.length > 0 && (
             <div className="mt-4 max-h-72 overflow-y-auto space-y-2 text-base">
               {chat.map((m, i) => (
@@ -179,11 +186,11 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
               ))}
             </div>
           )}
-          {chatBusy && <div className="text-sm text-slate-400 mt-2">pensando…</div>}
+          {chatBusy && <div className="text-sm text-slate-400 mt-2">{T.thinking}</div>}
           <form onSubmit={sendChat} className="flex gap-3 mt-4">
-            <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Ej.: ¿Qué casos tienen documentos pendientes?"
+            <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder={T.teamPh}
               className="flex-1 text-lg border-2 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-600" />
-            <button disabled={chatBusy} className="text-lg px-6 py-3 rounded-xl bg-emerald-700 text-white font-semibold disabled:opacity-40">Enviar</button>
+            <button disabled={chatBusy} className="text-lg px-6 py-3 rounded-xl bg-emerald-700 text-white font-semibold disabled:opacity-40">{T.send}</button>
           </form>
         </div>
       </section>
@@ -192,10 +199,10 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
         {/* Clients first */}
         <section className="lg:col-span-2 space-y-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold">Clientes <span className="text-sm font-normal text-slate-500">· documentos pendientes</span></h2>
-            <span className="text-xs text-slate-500">{data.clients.length} clientes</span>
+            <h2 className="text-lg font-semibold">{T.clients} <span className="text-sm font-normal text-slate-500">{T.clientsSub}</span></h2>
+            <span className="text-xs text-slate-500">{T.nClients(data.clients.length)}</span>
           </div>
-          {!loaded && <p className="text-sm text-slate-500">Cargando…</p>}
+          {!loaded && <p className="text-sm text-slate-500">{T.loading}</p>}
           <div className="rounded-xl border bg-white divide-y shadow-sm">
             {data.clients.map((c) => {
               const k = caseOf(c);
@@ -203,7 +210,8 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
               const total = k?.items_total || 12;
               const got = k?.items_received || 0;
               const flags = data.escalations.filter((e) => e.case_id === k?.id && e.status === "open").length;
-              const [label, pill] = STATUS[c.status] || [c.status, ""];
+              const [, pill] = STATUS[c.status] || [c.status, ""];
+              const label = T.status[c.status] || c.status;
               const isOpen = open === c.id;
               const docs = docsOf(k);
               return (
@@ -216,7 +224,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                     </button>
                     <div className="col-span-4">
                       <Bar rows={rows} />
-                      <div className="text-xs mt-1 text-slate-600"><span className="font-mono font-semibold text-slate-900">{got} de {total}</span> · {fmt(c.last_activity_at)}</div>
+                      <div className="text-xs mt-1 text-slate-600"><span className="font-mono font-semibold text-slate-900">{got} {T.of} {total}</span> · {fmt(c.last_activity_at)}</div>
                     </div>
                     <div className="col-span-2 flex items-center gap-2">
                       <span className={`text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap ${pill}`}>{label}</span>
@@ -224,12 +232,12 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                     </div>
                     <div className="col-span-3 flex justify-end gap-1.5">
                       <button disabled={!!busy || !k || ["wiped", "delivered"].includes(c.status)}
-                        onClick={() => act("deliver", { action: "deliver", case_id: k.id }, `¿Descargar el paquete de ${c.first_name}, entregarlo y borrar las fotos de Carpeta?`, () => exportPacket(c, k))}
+                        onClick={() => act("deliver", { action: "deliver", case_id: k.id }, T.confirmDeliver(c.first_name), () => exportPacket(c, k))}
                         className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-emerald-700 text-white disabled:opacity-30">
-                        <Send className="w-3.5 h-3.5" /> Entregar
+                        <Send className="w-3.5 h-3.5" /> {T.deliver}
                       </button>
                       <button disabled={!!busy || !k || c.status === "wiped"}
-                        onClick={() => act("wipe", { action: "wipe", case_id: k.id, by: "provider" }, `¿Borrar todo lo que ${c.first_name} mandó?`)}
+                        onClick={() => act("wipe", { action: "wipe", case_id: k.id, by: "provider" }, T.confirmWipe(c.first_name))}
                         className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md border border-red-200 text-red-700 disabled:opacity-30">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -238,11 +246,11 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                   {isOpen && k && (
                     <div className="px-4 pb-4 bg-stone-50/60">
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-xs text-slate-600">{k.process_label}{k.next_appointment ? ` · cita ${fmt(k.next_appointment)}` : ""}</span>
+                        <span className="text-xs text-slate-600">{k.process_label}{k.next_appointment ? ` · ${T.appt} ${fmt(k.next_appointment)}` : ""}</span>
                         <button onClick={() => act("quiet", { action: "set_visible", case_id: k.id, visible: !c.documents_visible_to_client })}
                           className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border bg-white">
                           {c.documents_visible_to_client ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          {c.documents_visible_to_client ? "El cliente ve su lista" : "Lista oculta al cliente"}
+                          {c.documents_visible_to_client ? T.clientSees : T.listHidden}
                         </button>
                       </div>
                       <ol className="space-y-1.5">
@@ -251,16 +259,16 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                           return (
                             <li key={r.id} className="flex items-center gap-2 text-sm bg-white rounded-md border px-2 py-1.5">
                               <span className="w-5 text-center">{ICON[r.status]}</span>
-                              <span className={`flex-1 ${r.required === false ? "line-through text-slate-400" : ""}`}>{r.order}. {r.label_es}</span>
+                              <span className={`flex-1 ${r.required === false ? "line-through text-slate-400" : ""}`}>{r.order}. {lang === "en" ? r.label_en || r.label_es : r.label_es}</span>
                               <button onClick={() => act("quiet", { action: "set_required", case_id: k.id, item_id: r.id, required: r.required === false })}
-                                title="El abogado/a decide si se pide este documento a este cliente"
+                                title={T.attorneyDecides}
                                 className={`text-[10px] px-1.5 py-0.5 rounded-full border ${r.required === false ? "bg-white text-slate-500" : "bg-emerald-50 text-emerald-800 border-emerald-200"}`}>
-                                {r.required === false ? "no se pide" : "se pide"}
+                                {r.required === false ? T.notRequested : T.requested}
                               </button>
                               <span className="text-[10px] px-1.5 rounded bg-slate-100 text-slate-600">{r.requested_by}</span>
-                              {r.retake_count > 0 && <span className="text-[11px] text-slate-500">intentos {r.retake_count}</span>}
-                              {r.type === "bring_original" && <span className="text-[11px]">🏷️ original</span>}
-                              {r.sha256 && <code className="text-[10px] text-slate-400" title="Huella del archivo entregado">{String(r.sha256).slice(0, 6)}…</code>}
+                              {r.retake_count > 0 && <span className="text-[11px] text-slate-500">{T.tries} {r.retake_count}</span>}
+                              {r.type === "bring_original" && <span className="text-[11px]">🏷️ {T.original}</span>}
+                              {r.sha256 && <code className="text-[10px] text-slate-400" title={T.fingerprint}>{String(r.sha256).slice(0, 6)}…</code>}
                               {doc && <a href={doc.file_url} target="_blank" rel="noreferrer"><img src={doc.file_url} alt="" className="w-10 h-10 object-cover rounded border" /></a>}
                               {r.source_url && <a className="text-[10px] text-sky-700 underline" href={r.source_url} target="_blank" rel="noreferrer">USCIS</a>}
                             </li>
@@ -269,12 +277,12 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                       </ol>
                       {docs.some((d) => d.outcome !== "accepted") && (
                         <div className="mt-3">
-                          <p className="text-xs font-semibold text-slate-600 mb-1">Fotos retenidas</p>
+                          <p className="text-xs font-semibold text-slate-600 mb-1">{T.held}</p>
                           <div className="flex flex-wrap gap-2">
                             {docs.filter((d) => d.outcome !== "accepted").map((d) => (
                               <a key={d.id} href={d.file_url} target="_blank" rel="noreferrer" className="text-[11px] text-center">
                                 <img src={d.file_url} alt="" className="w-14 h-14 object-cover rounded border" />
-                                {OUTCOME[d.outcome] || d.outcome}
+                                {T.outcome[d.outcome] || d.outcome}
                               </a>
                             ))}
                           </div>
@@ -291,22 +299,22 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
         <aside className="space-y-6">
           {/* Review queue */}
           <section>
-            <h2 className="text-lg font-semibold">Cola de revisión <span className="text-sm font-normal text-slate-500">· review queue ({queue.length})</span></h2>
-            {queue.length === 0 && <p className="text-sm text-slate-500 mt-2">Nada pendiente.</p>}
+            <h2 className="text-lg font-semibold">{T.queue} <span className="text-sm font-normal text-slate-500">({queue.length})</span></h2>
+            {queue.length === 0 && <p className="text-sm text-slate-500 mt-2">{T.nothing}</p>}
             <ul className="space-y-2 mt-2">
               {queue.map((e) => {
-                const [tag, cls] = CAT[e.category] || CAT.other;
+                const [, cls] = CAT[e.category] || CAT.other;
+                const tag = T.cat[e.category] || T.cat.other;
                 return (
                   <li key={e.id} className={`rounded-xl border bg-white p-3 shadow-sm ${e.category === "emergency" ? "border-red-400" : ""}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${cls}`}>{tag}</span>
                       <span className="text-[11px] text-slate-500">{fmt(e.created_date)}</span>
                     </div>
-                    <p className="text-sm mt-1.5"><span className="font-medium">{e.client_first_name || nameOfCase(e.case_id)}:</span> {e.summary_es || e.summary_en}</p>
-                    {e.summary_en && e.summary_es && <p className="text-xs text-slate-500 mt-0.5">{e.summary_en}</p>}
+                    <p className="text-sm mt-1.5"><span className="font-medium">{e.client_first_name || nameOfCase(e.case_id)}:</span> {lang === "en" ? e.summary_en || e.summary_es : e.summary_es || e.summary_en}</p>
                     <button onClick={() => act("quiet", { action: "resolve", case_id: e.case_id, escalation_id: e.id })}
                       className="mt-2 flex items-center gap-1 text-xs px-2 py-1 rounded-md border hover:bg-slate-50">
-                      <Check className="w-3.5 h-3.5" /> Resolver
+                      <Check className="w-3.5 h-3.5" /> {T.resolve}
                     </button>
                   </li>
                 );
@@ -316,37 +324,38 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
 
           {/* Invite */}
           <section className="rounded-xl border bg-white p-4 shadow-sm">
-            <h2 className="font-semibold flex items-center gap-1.5"><UserPlus className="w-4 h-4" /> Invitar cliente</h2>
-            <p className="text-xs text-slate-500">Carpeta nunca escribe primero: usted le manda el código y el cliente escribe.</p>
+            <h2 className="font-semibold flex items-center gap-1.5"><UserPlus className="w-4 h-4" /> {T.invite}</h2>
+            <p className="text-xs text-slate-500">{T.inviteSub}</p>
             <form onSubmit={doInvite} className="flex gap-2 mt-2">
-              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nombre (solo el primero)"
+              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={T.namePh}
                 className="flex-1 text-sm border rounded-md px-2 py-1.5" />
-              <button disabled={busy === "invite"} className="text-sm px-3 py-1.5 rounded-md bg-emerald-700 text-white disabled:opacity-40">Crear</button>
+              <button disabled={busy === "invite"} className="text-sm px-3 py-1.5 rounded-md bg-emerald-700 text-white disabled:opacity-40">{T.create}</button>
             </form>
             {invite && (
               <div className="mt-3 text-sm space-y-2">
-                <p>Código: <code className="font-bold">{invite.invite_code}</code></p>
+                <p>{T.code}: <code className="font-bold">{invite.invite_code}</code></p>
+                <p className="text-[11px] text-slate-500">{T.inviteNote}</p>
                 <p className="text-xs bg-stone-50 border rounded-md p-2">{inviteText}</p>
                 <div className="flex gap-2">
                   <button onClick={() => { navigator.clipboard?.writeText(inviteText); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
                     className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border">
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />} Copiar mensaje
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />} {T.copy}
                   </button>
-                  <a href={waLink} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md border text-emerald-800">Abrir WhatsApp con el código</a>
+                  <a href={waLink} target="_blank" rel="noreferrer" className="text-xs px-2 py-1 rounded-md border text-emerald-800">{T.openWa}</a>
                 </div>
               </div>
             )}
           </section>
 
           <section className="rounded-xl border bg-white p-4 text-sm text-slate-700 shadow-sm">
-            <p className="font-semibold">Cómo funciona</p>
-            <p className="mt-1">El paralegal hace el 80% del trabajo de juntar y revisar documentos; Carpeta lo hace más rápido y fácil de verificar, y el abogado/a solo firma. El cliente escribe el código en WhatsApp y Carpeta le pide la lista, uno por uno. El conteo viene de la base de datos, no del modelo. Toda pregunta legal pasa a la cola de revisión. Entregar descarga el paquete y borra las fotos; quedan el estado y una huella sha256.</p>
+            <p className="font-semibold">{T.how}</p>
+            <p className="mt-1">{T.howBody}</p>
           </section>
         </aside>
       </main>
 
       <footer className="fixed bottom-0 inset-x-0 bg-white/95 border-t text-center text-xs text-slate-600 py-2 px-4">
-        Información, no asesoría legal. El abogado/a elige el proceso y firma. · Built on <Base44Logo className="inline w-3 h-3" /> Base44
+        {T.footer} <Base44Logo className="inline w-3 h-3" /> Base44
       </footer>
     </div>
   );

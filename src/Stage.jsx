@@ -4,6 +4,7 @@ import { Base44Logo } from "@/components/Base44Logo";
 import { QRCodeSVG } from "qrcode.react";
 import confetti from "canvas-confetti";
 import { FolderOpen, Check } from "lucide-react";
+import { useLang, LangToggle } from "@/i18n";
 
 // Big-screen presentation view (Esteban's picks, Oct 10 14:21): phone on the left, progress on the right.
 // Pure UI over Base44 realtime; spends no AI credits.
@@ -32,6 +33,7 @@ const hhmm = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-US", { hour: "
 const serif = { fontFamily: "Georgia, 'Times New Roman', serif" };
 
 export default function Stage() {
+  const [lang, setLang, T] = useLang();
   const [d, setD] = useState({ clients: [], cases: [], items: [], docs: [], esc: [] });
   const [who, setWho] = useState("MARIA1");
   const [pulse, setPulse] = useState(0);
@@ -46,9 +48,11 @@ export default function Stage() {
 
   useEffect(() => {
     load();
-    const subs = [db.Document, db.ChecklistItem, db.Escalation, db.Client, db.Case].map((e) => e.subscribe(() => load()));
-    const poll = setInterval(load, 8000); // fallback if realtime is unavailable
-    return () => { subs.forEach((u) => typeof u === "function" && u()); clearInterval(poll); };
+    let timer = null;
+    const soon = () => { clearTimeout(timer); timer = setTimeout(load, 800); }; // one reload per burst of events
+    const subs = [db.Document, db.ChecklistItem, db.Escalation, db.Client, db.Case].map((e) => e.subscribe(soon));
+    const poll = setInterval(() => { if (!document.hidden) load(); }, 30000); // fallback if realtime is unavailable
+    return () => { subs.forEach((u) => typeof u === "function" && u()); clearInterval(poll); clearTimeout(timer); };
   }, [load]);
 
   const client = d.clients.find((c) => c.invite_code === who) || d.clients[0];
@@ -98,9 +102,10 @@ export default function Stage() {
         <div className="flex items-center gap-3">
           <FolderOpen className="w-10 h-10" style={{ color: LIME }} />
           <h1 className="text-5xl" style={serif}>Carpeta</h1>
+          <div className="ml-auto"><LangToggle lang={lang} setLang={setLang} t={T} dark /></div>
         </div>
-        <p className="text-2xl mt-2" style={serif}>Sus documentos de inmigración, por WhatsApp, con su abogado/a al lado.</p>
-        <p className="text-base text-slate-400 mt-1">Immigration documents over WhatsApp. The paralegal reviews, the attorney signs.</p>
+        <p className="text-2xl mt-2" style={serif}>{T.stageH1}</p>
+        <p className="text-base text-slate-400 mt-1">{T.stageSub}</p>
       </header>
 
       <main className="grid grid-cols-12 gap-12 px-12 py-6 pb-28">
@@ -123,12 +128,13 @@ export default function Stage() {
           {queue.length > 0 && (
             <div className="w-full max-w-[460px] space-y-2">
               {queue.slice(0, 3).map((e) => {
-                const [chip, cls] = CHIP[e.category] || CHIP.other;
+                const [, cls] = CHIP[e.category] || CHIP.other;
+                const chip = T.chip[e.category] || T.chip.other;
                 return (
                   <div key={e.id} className="fade-up flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${cls}`}>{chip}</span>
-                    <span className="flex-1 text-sm text-slate-200 truncate">{e.summary_es}</span>
-                    <button onClick={() => resolve(e)} className="text-xs px-2 py-1 rounded-md border border-white/20 hover:bg-white/10">Resolver</button>
+                    <span className="flex-1 text-sm text-slate-200 truncate">{lang === "en" ? e.summary_en || e.summary_es : e.summary_es}</span>
+                    <button onClick={() => resolve(e)} className="text-xs px-2 py-1 rounded-md border border-white/20 hover:bg-white/10">{T.resolve}</button>
                   </div>
                 );
               })}
@@ -147,7 +153,7 @@ export default function Stage() {
             </div>
           </div>
           <div className="mt-3 text-4xl" style={serif}>
-            <span style={{ color: LIME }} className="font-bold">{got}</span> de {total} {got >= total && <span className="text-2xl text-amber-300 ml-3">recibidos · revisar</span>}
+            <span style={{ color: LIME }} className="font-bold">{got}</span> {T.of} {total} {got >= total && <span className="text-2xl text-amber-300 ml-3">{T.receivedReview}</span>}
           </div>
 
           <ul className="mt-6 grid grid-cols-2 gap-x-10 gap-y-2.5 text-lg">
@@ -158,7 +164,7 @@ export default function Stage() {
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${done ? "border-lime-400 bg-lime-400" : r.status === "needs_retake" ? "border-amber-400" : "border-white/30"}`}>
                     {done && <Check className="w-3.5 h-3.5 text-[#0b1a33]" strokeWidth={3} />}
                   </span>
-                  <span className={done ? "text-white" : "text-slate-400"}>{r.label_es}</span>
+                  <span className={done ? "text-white" : "text-slate-400"}>{lang === "en" ? r.label_en || r.label_es : r.label_es}</span>
                 </li>
               );
             })}
@@ -169,7 +175,7 @@ export default function Stage() {
       <footer className="fixed bottom-0 inset-x-0 flex items-center justify-between gap-6 px-12 py-3 bg-black/30 text-slate-300 text-sm">
         <div className="flex items-center gap-4">
           <div className="bg-white p-1.5 rounded"><QRCodeSVG value={APP_URL} size={56} /></div>
-          <div><div className="text-white font-semibold">Pruébelo · {WA}</div><div className="text-slate-400 text-xs">{APP_URL.replace("https://", "")}</div></div>
+          <div><div className="text-white font-semibold">{T.tryIt} · {WA}</div><div className="text-slate-400 text-xs">{APP_URL.replace("https://", "")}</div></div>
         </div>
         <div className="flex items-center gap-2">
           {d.clients.slice(0, 4).map((c) => (
@@ -177,7 +183,7 @@ export default function Stage() {
               className={`px-3 py-1 rounded-full text-xs ${c.invite_code === client?.invite_code ? "bg-lime-400 text-black font-semibold" : "bg-white/10"}`}>{c.first_name}</button>
           ))}
         </div>
-        <div className="flex items-center gap-2"><Base44Logo className="w-5 h-5" /> Hecho en Base44 · información, no asesoría legal · datos ficticios</div>
+        <div className="flex items-center gap-2"><Base44Logo className="w-5 h-5" /> {T.stageFooter}</div>
       </footer>
     </div>
   );
