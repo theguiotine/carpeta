@@ -39,6 +39,66 @@ const ITEM_TEMPLATE = [
   ["prior_ead", "prior_ead", "Permiso de trabajo anterior (si tiene)", "Prior work permit (if any)", "USCIS", "La tarjeta de permiso de trabajo anterior, frente."],
   ["i589_copy", "i589_copy", "Copia del I-589 (primera página)", "I-589 copy (first page)", "FIRM", "La primera página de su solicitud de asilo."],
 ];
+// "¿Dónde lo consigo?": step-by-step help for finding each document on her own phone or
+// by asking the right person. Data, not agent prose: served by action "howto" word for word.
+// Rails: never asks for a password, a code or an ID number, never logs in for her.
+const SAFETY_LINE = "Nunca le voy a pedir su contraseña ni los códigos que le lleguen por mensaje. No los mande aquí.";
+const FORGOT_PASSWORD =
+  "Si no recuerda la contraseña: en la pantalla de entrada toque \"¿Olvidó su contraseña?\" (o \"Forgot password\"). Le llega un código por mensaje de texto o correo; escríbalo solo en esa app, nunca aquí.";
+const HOWTO: Record<string, string[]> = {
+  i589_receipt: [
+    "Busque una carta de USCIS que llegó por correo después de pedir asilo. Arriba dice \"I-797C, Notice of Action\".",
+    "Si no la encuentra, su abogado/a casi siempre tiene una copia. Responda AYUDA y se lo pregunto.",
+    "Si tiene cuenta en my.uscis.gov, entre y busque \"Documents\" o \"Notices\": ahí está la misma carta.",
+  ],
+  passport_photo: [
+    "Puede tomarse las fotos en una farmacia (CVS, Walgreens) pidiendo \"passport photos\".",
+    "Pida dos fotos iguales. Tome una foto de las fotos en una mesa y mándemela.",
+    "Guarde las fotos de papel para llevarlas a su cita.",
+  ],
+  lease: [
+    "Busque el contrato que firmó cuando se mudó.",
+    "Si no lo tiene, pídale una copia al dueño o al manager. Puede mandarle este texto: \"Hola, ¿me puede mandar una copia de mi contrato de renta? Gracias.\"",
+    "Si se lo mandan por correo o WhatsApp, reenvíemelo aquí.",
+  ],
+  paystub: [
+    "Es el papel o el correo que le dan con cada pago.",
+    "Si su trabajo usa una app de pagos (por ejemplo ADP o Paychex), ábrala y busque \"Pay statements\" o \"Recibos\"; tome captura de pantalla del más reciente.",
+    FORGOT_PASSWORD,
+  ],
+  utility_bill: [
+    "Abra la app o la página de su compañía de luz o gas (por ejemplo Con Edison o National Grid).",
+    "Toque \"Billing\" o \"Facturas\" y abra la factura más reciente. Tome captura de pantalla de la página con su nombre y dirección.",
+    FORGOT_PASSWORD,
+    "Si no tiene cuenta, la factura de papel que llega por correo también sirve.",
+  ],
+  school_letter: [
+    "Pida en la oficina principal (\"main office\") de la escuela una carta que diga que su hijo/a está inscrito/a.",
+    "Puede decir: \"Necesito una carta de inscripción para mi abogado/a de inmigración.\"",
+    "Cuando se la den, tome la foto en una mesa con buena luz.",
+  ],
+  clinic_letter: [
+    "Pida en la recepción de la clínica una carta que diga que usted es paciente desde cierta fecha.",
+    "No hace falta información médica; solo su nombre y desde cuándo la atienden.",
+  ],
+  church_letter: [
+    "Pídale al padre, pastor o a la oficina de la parroquia una carta que diga que usted participa en la comunidad y desde cuándo.",
+    "Si va a un grupo comunitario, también sirve una carta de ellos.",
+  ],
+  prior_ead: [
+    "Si alguna vez tuvo permiso de trabajo, es una tarjeta de plástico que dice \"Employment Authorization Card\".",
+    "Tome foto del frente en una mesa. Si nunca tuvo uno, responda NO TENGO y se lo aviso a su abogado/a.",
+  ],
+  i589_copy: [
+    "Es la primera página de su solicitud de asilo. Su abogado/a o la organización que le ayudó a llenarla suele tener una copia.",
+    "Si no la tiene, responda AYUDA y se lo pregunto a su abogado/a.",
+  ],
+};
+const howtoText = (docType: string, label: string) => {
+  const steps = HOWTO[docType] || ["Pregúntele a su abogado/a. Responda AYUDA y se lo paso."];
+  return `Cómo conseguir: ${label}\n` + steps.map((s, i) => `${i + 1}. ${s}`).join("\n") + `\n\n${SAFETY_LINE}`;
+};
+
 const USCIS_SOURCE = "https://www.uscis.gov/i-765";
 const SOURCE_READ = "2026-10-10";
 
@@ -200,6 +260,25 @@ export default async function (req: Request): Promise<Response> {
     if (action === "consent") reply += " Mándeme una foto a la vez, en una mesa, con buena luz.";
     if (when && input.include_appointment) reply += ` Su cita es el ${when}.`;
     return ok({ received, total, reply_text: reply });
+  }
+
+  if (action === "howto") {
+    const rows = await items(kase.id);
+    const pick = input.item_number
+      ? rows.find((r: any) => r.order === Number(input.item_number))
+      : rows.find((r: any) => r.doc_type === input.doc_type || r.key === input.doc_type);
+    if (!pick) {
+      const list = rows.map((r: any) => `${r.order}. ${r.label_es}`).join("\n");
+      return ok({ reply_text: `¿Cuál documento? Responda con el número:\n${list}` });
+    }
+    await touch(client);
+    return ok({ reply_text: howtoText(pick.doc_type, pick.label_es) });
+  }
+
+  if (action === "refresh_howto") {
+    const rows = await items(kase.id);
+    for (const r of rows) await db.ChecklistItem.update(r.id, { how_to_get_es: howtoText(r.doc_type, r.label_es) });
+    return ok({ reply_text: `Updated ${rows.length} items` });
   }
 
   if (action === "escalate") {
