@@ -59,6 +59,12 @@ Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 202
 
 **100 integration credits cover about one full run.** So: logic is tested by calling the backend function directly (database reads and writes are free); WhatsApp rehearsals use 3 photos; the full 12-photo run happens once and is recorded as the demo video; the stage demo replays it. CLI deploys and manual edits are not listed as credit costs.
 
+## Operator notes
+
+- **Anonymous access resets on every `npx base44 agents push`.** After any agent push, open Dashboard → Agents → carpeta → Edit → Guidelines and turn **Allow anonymous access** back on, then Save. Without it, WhatsApp users who are not signed in cannot chat.
+- **The demo is public on purpose.** The paralegal page and the `invite` action are open so judges can click them with fictional data. Production puts the page behind Base44 login with row-level access per provider.
+- **Language.** The assistant answers in the client's language (Spanish by default) and translates the backend's fixed lines faithfully, keeping every count.
+
 ## Run it
 
 ```bash
