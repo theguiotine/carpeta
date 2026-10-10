@@ -214,7 +214,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
   const latest = answers[answers.length - 1];
   const earlier = answers.slice(0, -1).slice(-3).reverse();
   const accepted = data.docs.filter((d) => d.outcome === "accepted").slice(0, 8);
-  const SAMPLE = [["04-lease.png", "lease"], ["07-utility-bill-sep.png", "utility_bill"], ["05-paystub-aug.png", "paystub"], ["01-I-797C-receipt-I-589.png", "i589_receipt"]];
+  const SAMPLE = [["lease.png", ["Lease", "Contrato de renta"]], ["utility-bill.png", ["Utility bill", "Factura de luz"]], ["paystub-aug.png", ["Pay stub · Aug", "Talón de pago · agosto"]], ["paystub-sep.png", ["Pay stub · Sep", "Talón de pago · septiembre"]]];
   const labelFor = (d) => {
     const it = data.items.find((x) => x.id === d.checklist_item_id);
     return it ? (lang === "en" ? it.label_en || it.label_es : it.label_es) : d.classified_as;
@@ -283,7 +283,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
         </div>
       </section>
 
-      <main className="max-w-6xl mx-auto px-4 pb-16 grid gap-4 lg:grid-cols-3 mt-4 items-start">
+      <main className="max-w-6xl mx-auto px-4 pb-4 grid gap-4 lg:grid-cols-3 mt-4 items-start">
         <div className="lg:col-span-2 space-y-4">
           {/* Clients table, next move first */}
           <section className="rounded-xl border bg-white shadow-sm overflow-hidden">
@@ -360,20 +360,6 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
             </div>
           </section>
 
-          {/* Documents received (from Carpeta's own records; samples if none yet) */}
-          <section className="rounded-xl border bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-semibold">{T.docsTitle}</h2>
-            <div className="grid grid-cols-4 gap-3 mt-2">
-              {(accepted.length ? accepted.map((d) => ({ url: d.file_url, label: labelFor(d), who: nameOfCase(d.case_id), sample: false }))
-                : SAMPLE.map(([f, ty]) => ({ url: `/demo-docs/${f}`, label: ty, who: "", sample: true }))).map((x, i) => (
-                <a key={i} href={x.url} target="_blank" rel="noreferrer" className="block rounded-lg border overflow-hidden bg-stone-50">
-                  <div className="relative"><img src={x.url} alt="" className="w-full h-24 object-cover" />
-                    {x.sample && <span className="absolute top-1 left-1 text-[10px] font-bold bg-amber-300 px-1.5 rounded">{T.sample}</span>}</div>
-                  <div className="px-2 py-1 text-[11px]"><div className="font-medium truncate">{x.label}</div>{x.who && <div className="text-slate-500">{x.who}</div>}</div>
-                </a>
-              ))}
-            </div>
-          </section>
         </div>
 
         <aside className="space-y-4">
@@ -398,28 +384,25 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
             </ul>
           </section>
 
-          <section className="rounded-xl border bg-white p-4 shadow-sm">
-            <h2 className="font-semibold flex items-center gap-1.5"><UserPlus className="w-4 h-4" /> {T.invite}</h2>
-            <p className="text-xs text-slate-500">{T.inviteSub}</p>
-            <form onSubmit={doInvite} className="flex gap-2 mt-2">
-              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={T.namePh} className="flex-1 text-sm border rounded-md px-2 py-1.5" />
-              <button disabled={busy === "invite"} className="text-sm px-3 py-1.5 rounded-md bg-emerald-700 text-white disabled:opacity-40">{T.create}</button>
-            </form>
-            {invite && (
-              <div className="mt-3 text-sm space-y-2">
-                <p>{T.code}: <code className="font-bold">{invite.invite_code}</code></p>
-                <p className="text-[11px] text-slate-500">{T.inviteNote}</p>
-                <p className="text-xs bg-stone-50 border rounded-md p-2">{inviteText}</p>
-                <div className="flex gap-2 flex-wrap">
-                  <button onClick={() => { navigator.clipboard?.writeText(inviteText); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border">{copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />} {T.copy}</button>
-                </div>
-              </div>
-            )}
-          </section>
 
         </aside>
       </main>
+      <div className="max-w-6xl mx-auto px-4 pb-20">
+          {/* Documents received (from Carpeta's own records; samples if none yet) */}
+          <section className="rounded-xl border bg-white p-4 shadow-sm">
+            <h2 className="text-lg font-semibold">{T.docsTitle}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+              {(accepted.length ? accepted.map((d) => ({ url: d.file_url, label: labelFor(d), who: nameOfCase(d.case_id), sample: false }))
+                : SAMPLE.map(([f, label]) => ({ url: `/samples/${f}`, label: lang === "en" ? label[0] : label[1], who: "María", sample: false }))).map((x, i) => (
+                <a key={i} href={x.url} target="_blank" rel="noreferrer" className="block rounded-lg border overflow-hidden bg-stone-50">
+                  <div className="relative"><img src={x.url} alt="" className="w-full h-48 object-cover object-top" />
+                    </div>
+                  <div className="px-2 py-1 text-[11px]"><div className="font-medium truncate">{x.label}</div>{x.who && <div className="text-slate-500">{x.who}</div>}</div>
+                </a>
+              ))}
+            </div>
+          </section>
+      </div>
 
       <footer className="fixed bottom-0 inset-x-0 bg-white/95 border-t text-center text-xs text-slate-600 py-2 px-4">
         {T.footer}
