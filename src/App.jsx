@@ -200,7 +200,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
     return openFlag ? "review" : "requested";
   };
   const flagsOf = (k) => data.escalations.filter((e) => e.case_id === k?.id && e.status === "open").length;
-  const daysTo = (k) => (k?.deadline ? Math.ceil((new Date(k.deadline + "T23:59:59") - Date.now()) / 86400000) : null);
+  const daysTo = (k) => { if (!k?.deadline) return null; const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((new Date(k.deadline + "T00:00:00") - t) / 86400000); }; // calendar days, local time
   const sortedClients = data.clients.filter((c) => !HIDDEN.includes(c.invite_code)).sort((a, b) => {
     const ka = caseOf(a), kb = caseOf(b);
     const da = daysTo(ka) ?? 9999, dbb = daysTo(kb) ?? 9999;
