@@ -99,6 +99,19 @@ const howtoText = (docType: string, label: string) => {
   return `Cómo conseguir: ${label}\n` + steps.map((s, i) => `${i + 1}. ${s}`).join("\n") + `\n\n${SAFETY_LINE}`;
 };
 
+// Spoken Spanish document names -> classifier labels, for the phone agent.
+function voiceDocType(said: string): string {
+  const t = said.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const map: [RegExp, string][] = [
+    [/recibo|i-?797|aviso|asilo/, "i589_receipt"], [/foto|pasaporte/, "passport_photo"], [/contrato|renta|alquiler|lease/, "lease"],
+    [/talon|pago|cheque|nomina|paystub/, "paystub"], [/luz|gas|factura|electric|con ?ed/, "utility_bill"], [/escuela|colegio/, "school_letter"],
+    [/clinica|doctor|hospital/, "clinic_letter"], [/iglesia|parroquia|pastor|padre/, "church_letter"], [/permiso de trabajo|tarjeta|ead/, "prior_ead"],
+    [/i-?589|solicitud/, "i589_copy"],
+  ];
+  for (const [re, k] of map) if (re.test(t)) return k;
+  return "";
+}
+
 const USCIS_SOURCE = "https://www.uscis.gov/i-765";
 const SOURCE_READ = "2026-10-10";
 
@@ -121,10 +134,33 @@ async function sha256Hex(url: string): Promise<string> {
   }
 }
 
-export default async function (req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const base44 = createClientFromRequest(req);
   const db = base44.asServiceRole.entities;
   const input = await req.json().catch(() => ({}));
+
+  // Vapi phone agent adapter: Vapi posts {message:{type:"tool-calls", toolCallList:[...]}} and expects
+  // {results:[{toolCallId, result}]} with a flat one-line string, always HTTP 200.
+  if (input?.message?.type === "tool-calls" && Array.isArray(input.message.toolCallList)) {
+    const results = [];
+    for (const call of input.message.toolCallList) {
+      let args: any = call?.function?.arguments ?? {};
+      if (typeof args === "string") { try { args = JSON.parse(args); } catch { args = {}; } }
+      const name = String(call?.function?.name || "");
+      const sub: Record<string, unknown> = { invite_code: args.codigo || args.invite_code || "" };
+      if (name === "carpeta_donde") { sub.action = "howto"; sub.doc_type = voiceDocType(String(args.documento || "")); sub.voice = true; }
+      else { sub.action = "voice_status"; }
+      try {
+        const res = await handler(new Request(req.url, { method: "POST", headers: req.headers, body: JSON.stringify(sub) }));
+        const out = await res.json();
+        results.push({ toolCallId: call.id, result: String(out.reply_text || "").replace(/\s*\n+\s*/g, " ").replace(/\d+\.\s/g, "") });
+      } catch (e) {
+        results.push({ toolCallId: call.id, error: "No pude revisar el expediente ahora." });
+      }
+    }
+    return Response.json({ results });
+  }
+
   const action = String(input.action || "");
 
   async function loadByCode(code: string) {
@@ -290,8 +326,20 @@ export default async function (req: Request): Promise<Response> {
     return ok({ received, total, reply_text: reply });
   }
 
+  if (action === "voice_status") {
+    const { rows, received, total } = await recount(kase.id);
+    const next = rows.find((r: any) => r.required !== false && !["received", "delivered"].includes(r.status));
+    await touch(client);
+    const tail = next ? ` Lo siguiente que falta es: ${next.label_es}. Si quiere saber dónde conseguirlo, pregúnteme.` : " Ya tiene todo. Su oficina lo va a revisar.";
+    return ok({ received, total, reply_text: `Hola ${client.first_name}. Ya tiene ${received} de ${total} documentos.${tail}` });
+  }
+
   if (action === "howto") {
     const rows = await items(kase.id);
+    if (input.voice && !input.doc_type) {
+      const next = rows.find((r: any) => r.required !== false && !["received", "delivered"].includes(r.status));
+      if (next) return ok({ reply_text: howtoText(next.doc_type, next.label_es) });
+    }
     const pick = input.item_number
       ? rows.find((r: any) => r.order === Number(input.item_number))
       : rows.find((r: any) => r.doc_type === input.doc_type || r.key === input.doc_type);
@@ -512,3 +560,5 @@ export default async function (req: Request): Promise<Response> {
 
   return fail("Acción desconocida.");
 }
+
+export default handler;
