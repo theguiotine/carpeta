@@ -103,10 +103,10 @@ export default function Stage() {
         <p className="text-base text-slate-400 mt-1">Immigration documents over WhatsApp. The paralegal reviews, the attorney signs.</p>
       </header>
 
-      <main className="grid grid-cols-12 gap-12 px-12 py-8 pb-28">
+      <main className="grid grid-cols-12 gap-12 px-12 py-6 pb-28">
         {/* Left: phone + review strip */}
         <section className="col-span-5 flex flex-col items-center gap-5">
-          <div className="w-[320px] h-[560px] rounded-[44px] border-[10px] border-[#14284d] bg-[#ece5dd] shadow-2xl overflow-hidden flex flex-col">
+          <div className="w-[300px] h-[470px] rounded-[44px] border-[10px] border-[#14284d] bg-[#ece5dd] shadow-2xl overflow-hidden flex flex-col">
             <div className="bg-[#075e54] px-4 py-3 flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center"><FolderOpen className="w-5 h-5 text-[#075e54]" /></div>
               <div><div className="font-semibold">Carpeta</div><div className="text-[11px] text-green-100">{WA}</div></div>
