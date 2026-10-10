@@ -67,6 +67,18 @@ Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 202
 | Private storage + expiring links (~1/photo extra) | roadmap | feasible |
 | GitHub two-way sync | no | yes |
 
+## Team integration contract (Roberto's FastAPI)
+
+Carpeta calls these from the `carpeta-api` Base44 function (server-side, 20-25 s timeout, falls back gracefully). URLs live in Base44 secrets, so an ngrok restart is a `npx base44 secrets set`, not a redeploy.
+
+| Secret | Endpoint | Request | Response |
+|---|---|---|---|
+| `EXTERNAL_CLASSIFIER_URL` | `POST /api/classify` | `{"file_url": str, "doc_types": [str]}` | `{"classified_as": one of doc_types or "unknown", "confidence": 0-1, "quality_flags": ["blurry","cut_off","glare","not_a_document","screenshot"], "name_on_document": str, "document_date": "YYYY-MM-DD" or ""}`. No ID numbers in any field. |
+| `ASK_URL` | `POST /api/ask` | `{"question": str, "client_phone": ""}` | `{"answer": str (Spanish, under 80 words, no eligibility, odds, timing or strategy), "sources": [{"title","url","page"}]}`, or `{"legal_judgment": true}` when it is a judgment call. |
+| `TEAM_CHAT_URL` | `POST /api/attorney-chat` | `{"message": str, "attorney_id": "test"}` | `{"reply": str}` |
+
+**The legal gate stays in our code.** Before `/api/ask` is called, a fixed pattern check sends eligibility, odds, timing, travel, enforcement and "what do I do with this letter" questions straight to the attorney with a fixed refusal, and the agent is told to escalate any question about the client's own case. Only general-information questions reach the RAG, every RAG answer carries its source and "Información general, no asesoría legal", and every one is logged to the paralegal's review queue. Every photo records which classifier filed it (`Document.classified_by`).
+
 ## Operator notes
 
 - **Anonymous access resets on every `npx base44 agents push`.** After any agent push, open Dashboard → Agents → carpeta → Edit → Guidelines and turn **Allow anonymous access** back on, then Save. Without it, WhatsApp users who are not signed in cannot chat.

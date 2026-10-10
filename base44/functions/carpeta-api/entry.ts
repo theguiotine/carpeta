@@ -7,6 +7,10 @@ const DOC_TYPES = [
   "i589_receipt", "passport_photo", "lease", "paystub", "utility_bill",
   "school_letter", "clinic_letter", "church_letter", "prior_ead", "i589_copy",
 ];
+// Questions that need a lawyer's judgment never reach any model: eligibility, odds, timing, strategy,
+// travel, enforcement, what a government letter means for her.
+const LEGAL_JUDGMENT = /(califico|calificar|elegib|puedo (viajar|salir|trabajar|quedarme|pedir)|voy a ganar|me van a|deport|ice\b|que formulario|cual formulario|deberia|me conviene|cuando (me|sale|llega|va)|cuanto (tarda|tiempo)|que (hago|pasa) (si|con)|juez|corte|audiencia|green card|residencia|ciudadan|asilo .*(ganar|negar)|riesgo|ilegal)/;
+
 const RETAKE_FLAGS = ["blurry", "cut_off", "glare"];
 const ADDRESS_WINDOW_DAYS = 90; // the provider's setting, not a USCIS rule
 
@@ -396,6 +400,39 @@ async function handler(req: Request): Promise<Response> {
     const rows = await items(kase.id);
     for (const r of rows) await db.ChecklistItem.update(r.id, { how_to_get_es: howtoText(r.doc_type, r.label_es) });
     return ok({ reply_text: `Updated ${rows.length} items` });
+  }
+
+  // Informational questions go to Roberto's RAG, gated: the legal-judgment check runs first, in code.
+  if (action === "ask") {
+    const q = String(input.question || "").slice(0, 500);
+    if (!q) return fail("¿Cuál es su pregunta?");
+    if (LEGAL_JUDGMENT.test(q.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())) {
+      await escalate(ctx, "legal_question", q.slice(0, 140), "Legal judgment question routed by the gate: " + q.slice(0, 100));
+      return ok({ reply_text: ESCALATION_REPLIES.legal_question, gate: "refused" });
+    }
+    const url = Deno.env.get("ASK_URL");
+    try {
+      if (!url) throw new Error("no ASK_URL");
+      const res = await fetch(url, {
+        method: "POST", headers: { "content-type": "application/json", "ngrok-skip-browser-warning": "1" },
+        body: JSON.stringify({ question: q, client_phone: "" }), signal: AbortSignal.timeout(25000),
+      });
+      if (!res.ok) throw new Error("ask " + res.status);
+      const out = await res.json();
+      if (out?.legal_judgment || !out?.answer) {
+        await escalate(ctx, "legal_question", q.slice(0, 140), "Team RAG flagged a legal judgment call: " + q.slice(0, 100));
+        return ok({ reply_text: ESCALATION_REPLIES.legal_question, gate: "rag_refused" });
+      }
+      const src = Array.isArray(out.sources) && out.sources.length
+        ? " Fuente: " + out.sources.slice(0, 2).map((x: any) => [x.title, x.page ? `p. ${x.page}` : "", x.url].filter(Boolean).join(", ")).join("; ")
+        : "";
+      const answer = String(out.answer).slice(0, 700);
+      await escalate(ctx, "other", ("Respondida por RAG: " + q).slice(0, 140), ("Answered by team RAG: " + q).slice(0, 140));
+      return ok({ reply_text: `${answer}${src} (Información general, no asesoría legal. Su abogado/a revisa su caso.)`, gate: "rag_answered" });
+    } catch {
+      await escalate(ctx, "other", ("Pregunta sin respuesta: " + q).slice(0, 140), ("Unanswered question (RAG down): " + q).slice(0, 140));
+      return ok({ reply_text: "No tengo esa respuesta ahora; se la paso a su oficina.", gate: "rag_down" });
+    }
   }
 
   if (action === "escalate") {
