@@ -303,6 +303,14 @@ export default async function (req: Request): Promise<Response> {
     return ok({ reply_text: howtoText(pick.doc_type, pick.label_es) });
   }
 
+  if (action === "set_required") {
+    const item = await db.ChecklistItem.get(String(input.item_id || ""));
+    if (!item || item.case_id !== kase.id) return fail("No encontré ese documento.");
+    await db.ChecklistItem.update(item.id, { required: !!input.required });
+    const { received, total } = await recount(kase.id);
+    return ok({ received, total, reply_text: `${item.label_es}: ${input.required ? "pedido" : "no se pide"} (${received} de ${total})` });
+  }
+
   if (action === "set_visible") {
     await db.Client.update(client.id, { documents_visible_to_client: !!input.visible });
     return ok({ reply_text: input.visible ? "Visible para el cliente" : "Oculto para el cliente" });

@@ -211,7 +211,12 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                           return (
                             <li key={r.id} className="flex items-center gap-2 text-sm bg-white rounded-md border px-2 py-1.5">
                               <span className="w-5 text-center">{ICON[r.status]}</span>
-                              <span className="flex-1">{r.order}. {r.label_es}</span>
+                              <span className={`flex-1 ${r.required === false ? "line-through text-slate-400" : ""}`}>{r.order}. {r.label_es}</span>
+                              <button onClick={() => act("quiet", { action: "set_required", case_id: k.id, item_id: r.id, required: r.required === false })}
+                                title="El abogado/a decide si se pide este documento a este cliente"
+                                className={`text-[10px] px-1.5 py-0.5 rounded-full border ${r.required === false ? "bg-white text-slate-500" : "bg-emerald-50 text-emerald-800 border-emerald-200"}`}>
+                                {r.required === false ? "no se pide" : "se pide"}
+                              </button>
                               <span className="text-[10px] px-1.5 rounded bg-slate-100 text-slate-600">{r.requested_by}</span>
                               {r.retake_count > 0 && <span className="text-[11px] text-slate-500">intentos {r.retake_count}</span>}
                               {r.type === "bring_original" && <span className="text-[11px]">🏷️ original</span>}
