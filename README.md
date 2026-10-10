@@ -46,9 +46,9 @@ The assistant only repeats what the provider's case record already says. It neve
 | CLI from a public repo | Everything deployed with `npx base44 deploy` from this repo | this repo |
 | Logs | Function logs during testing | `npx base44 logs --function carpeta-api` |
 
-## Credit budget (Free plan + hackathon coupon: 100 integration credits, 125 message credits)
+## Credit budget
 
-Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 2026); per-run totals are our estimates, not measurements.
+Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 2026); plan ceilings from base44.com/pricing (read Sat Oct 10 2026, 13:30 ET, no page date shown). Per-run totals are our estimates, not measurements.
 
 | Item | Estimate |
 |---|---|
@@ -57,7 +57,15 @@ Costs from docs.base44.com (Credits page and AI agents page, read Sat Oct 10 202
 | Full 12-photo run + one refusal + ENTREGAR | ~95 |
 | 3-photo rehearsal | ~33 |
 
-**100 integration credits cover about one full run.** So: logic is tested by calling the backend function directly (database reads and writes are free); WhatsApp rehearsals use 3 photos; the full 12-photo run happens once and is recorded as the demo video; the stage demo replays it. CLI deploys and manual edits are not listed as credit costs.
+| | Free + hackathon coupon (today) | Builder ($40/mo billed annually) |
+|---|---|---|
+| Integration credits / month | 100 (about 84 left at 13:30) | 10,000 |
+| Message credits / month | 25 + 100 bonus | 250 |
+| Full 12-photo runs affordable | about 1 | about 100 |
+| Embedded paralegal chat (~3/turn) | cut | back in |
+| Live tests of the language mirror | cut | back in |
+| Private storage + expiring links (~1/photo extra) | roadmap | feasible |
+| GitHub two-way sync | no | yes |
 
 ## Operator notes
 
