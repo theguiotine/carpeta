@@ -288,6 +288,33 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
+  // ---------- read-only team panel (Roberto's FastAPI); sanitized server-side ----------
+  if (action === "team_data") {
+    const base = (Deno.env.get("TEAM_API_BASE") || "").replace(/\/$/, "");
+    if (!base) return fail("Team backend not configured.");
+    const get = async (p: string) => {
+      const r = await fetch(base + p, { headers: { "ngrok-skip-browser-warning": "1" }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) throw new Error(p + " " + r.status);
+      return r.json();
+    };
+    const last4 = (p: unknown) => { const d = String(p || "").replace(/\D/g, ""); return d ? "•••" + d.slice(-4) : ""; };
+    try {
+      const [c, q, d] = await Promise.all([get("/api/clients"), get("/api/review-queue"), get("/api/documents")]);
+      const arr = (x: any, k: string) => (Array.isArray(x) ? x : Array.isArray(x?.[k]) ? x[k] : []);
+      return ok({
+        clients: arr(c, "clients").slice(0, 50).map((x: any) => ({
+          name: x.name, phone: last4(x.phone), case_type: x.case_type, benefit_sought: x.benefit_sought, language: x.language,
+          status: x.case_facts?.status, next_hearing: x.case_facts?.next_hearing,
+        })),
+        queue: arr(q, "items").slice(0, 50).map((x: any) => ({ id: x.id, phone: last4(x.phone), question: String(x.question || "").slice(0, 200), status: x.status, created_at: x.created_at })),
+        documents: arr(d, "packages").concat(arr(d, "documents")).slice(0, 100).map((x: any) => ({ id: x.id, client_name: x.client_name, doc_type: x.doc_type, status: x.status, created_at: x.created_at })),
+        fetched_at: now(),
+      });
+    } catch (e) {
+      return fail("Team backend offline.", { error: String(e) });
+    }
+  }
+
   // ---------- invite a new client (from the paralegal page) ----------
   if (action === "invite") {
     const first = String(input.first_name || "").trim().split(/\s+/)[0].slice(0, 30);

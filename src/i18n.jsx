@@ -43,6 +43,7 @@ export const STRINGS = {
     stageFooter: "Built on Base44 · information, not legal advice · fictional data",
     normalView: "normal view",
     moreLangs: "more languages soon",
+    tbTitle: "Team backend (Roberto)", tbSub: "Read-only view of Roberto's FastAPI data. Phones show the last 4 digits only.", tbClients: "Clients", tbQueue: "Review queue", tbDocs: "Documents", tbNone: "None yet.", tbOffline: "Offline, showing cached data", tbUpdated: "Updated", tbHearing: "hearing",
   },
   es: {
     banner: "Demo · todos los datos son ficticios",
@@ -84,6 +85,7 @@ export const STRINGS = {
     stageFooter: "Hecho en Base44 · información, no asesoría legal · datos ficticios",
     normalView: "vista normal",
     moreLangs: "más idiomas pronto",
+    tbTitle: "Backend del equipo (Roberto)", tbSub: "Vista de solo lectura de los datos del FastAPI de Roberto. Los teléfonos muestran solo los últimos 4 dígitos.", tbClients: "Clientes", tbQueue: "Cola de revisión", tbDocs: "Documentos", tbNone: "Nada todavía.", tbOffline: "Sin conexión, mostrando datos guardados", tbUpdated: "Actualizado", tbHearing: "audiencia",
   },
 };
 

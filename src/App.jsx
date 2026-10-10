@@ -42,6 +42,60 @@ function Bar({ rows }) {
   );
 }
 
+function TeamPanel({ T }) {
+  const KEY = "carpeta_team_cache";
+  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } });
+  const [offline, setOffline] = useState(false);
+  const fetchIt = useCallback(async () => {
+    try {
+      const out = await api({ action: "team_data" });
+      if (out?.ok) { setData(out); setOffline(false); try { localStorage.setItem(KEY, JSON.stringify(out)); } catch { /* ignore */ } }
+      else setOffline(true);
+    } catch { setOffline(true); }
+  }, []);
+  useEffect(() => {
+    fetchIt();
+    const t = setInterval(() => { if (!document.hidden) fetchIt(); }, 30000);
+    window.addEventListener("focus", fetchIt);
+    return () => { clearInterval(t); window.removeEventListener("focus", fetchIt); };
+  }, [fetchIt]);
+  const byClient = (data?.documents || []).reduce((m, d) => { (m[d.client_name || "—"] ||= []).push(d); return m; }, {});
+  return (
+    <section className="space-y-2">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-lg font-semibold">{T.tbTitle}</h2>
+        <span className={`text-xs ${offline ? "text-amber-700" : "text-slate-500"}`}>
+          {offline ? `⚠ ${T.tbOffline}` : data?.fetched_at ? `${T.tbUpdated} ${new Date(data.fetched_at).toLocaleTimeString()}` : ""}
+        </span>
+      </div>
+      <p className="text-xs text-slate-500">{T.tbSub}</p>
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="rounded-xl border bg-white p-3 shadow-sm">
+          <p className="text-sm font-semibold mb-1">{T.tbClients}</p>
+          {(data?.clients || []).length === 0 && <p className="text-xs text-slate-500">{T.tbNone}</p>}
+          <ul className="space-y-1.5 text-xs">{(data?.clients || []).map((c, i) => (
+            <li key={i}><b>{c.name}</b> <span className="text-slate-400">{c.phone}</span><br />{[c.case_type, c.benefit_sought, c.language].filter(Boolean).join(" · ")}{c.status ? ` · ${c.status}` : ""}{c.next_hearing ? ` · ${T.tbHearing} ${c.next_hearing}` : ""}</li>
+          ))}</ul>
+        </div>
+        <div className="rounded-xl border bg-white p-3 shadow-sm">
+          <p className="text-sm font-semibold mb-1">{T.tbQueue}</p>
+          {(data?.queue || []).length === 0 && <p className="text-xs text-slate-500">{T.tbNone}</p>}
+          <ul className="space-y-1.5 text-xs">{(data?.queue || []).slice(0, 8).map((q, i) => (
+            <li key={q.id || i}>{q.question} <span className="text-slate-400">· {q.status} · {q.created_at ? new Date(q.created_at).toLocaleString() : ""}</span></li>
+          ))}</ul>
+        </div>
+        <div className="rounded-xl border bg-white p-3 shadow-sm">
+          <p className="text-sm font-semibold mb-1">{T.tbDocs}</p>
+          {Object.keys(byClient).length === 0 && <p className="text-xs text-slate-500">{T.tbNone}</p>}
+          <ul className="space-y-1.5 text-xs">{Object.entries(byClient).map(([name, ds]) => (
+            <li key={name}><b>{name}</b>: {ds.map((x) => `${x.doc_type} (${x.status})`).join(", ")}</li>
+          ))}</ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [lang, setLang, T] = useLang();
   const [data, setData] = useState({ providers: [], clients: [], cases: [], items: [], escalations: [], docs: [] });
@@ -294,6 +348,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
               );
             })}
           </div>
+          <TeamPanel T={T} />
         </section>
 
         <aside className="space-y-6">
