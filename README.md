@@ -82,6 +82,8 @@ Carpeta calls these from the `carpeta-api` Base44 function (server-side, 20-25 s
 ## Operator notes
 
 - **Anonymous access resets on every `npx base44 agents push`.** After any agent push, open Dashboard → Agents → carpeta → Edit → Guidelines and turn **Allow anonymous access** back on, then Save. Without it, WhatsApp users who are not signed in cannot chat.
+- **Send to office is real and wipes the photos; press it only at the end of the pitch.** (Reset a demo client by setting its checklist back to missing.)
+- **Walk-up demo:** the stage QR opens WhatsApp to the agent's number with `DEMO01` prefilled (a shared fictional case). The bot never writes first: Base44 in-app agents cannot send outbound messages; people must message first.
 - **The demo is public on purpose.** The paralegal page and the `invite` action are open so judges can click them with fictional data. Production puts the page behind Base44 login with row-level access per provider.
 - **Language.** The assistant answers in the client's language (Spanish by default) and translates the backend's fixed lines faithfully, keeping every count.
 
