@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Base44Logo } from "@/components/Base44Logo";
 import { useLang, LangToggle } from "@/i18n";
-import { RefreshCw, ChevronDown, ChevronRight, AlertTriangle, Send, Trash2, FolderOpen, UserPlus, Copy, Check, Eye, EyeOff } from "lucide-react";
+import { MessageCircle, RefreshCw, ChevronDown, ChevronRight, AlertTriangle, Send, Trash2, FolderOpen, UserPlus, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 const db = base44.entities;
 const api = async (data) => {
@@ -62,26 +62,13 @@ function TeamPanel({ T }) {
   const byClient = (data?.documents || []).reduce((m, d) => { (m[d.client_name || "—"] ||= []).push(d); return m; }, {});
   return (
     <section className="space-y-2">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold">{T.tbTitle}</h2>
-        <span className={`text-xs ${offline ? "text-amber-700" : "text-slate-500"}`}>
-          {offline ? `⚠ ${T.tbOffline}` : data?.fetched_at ? `${T.tbUpdated} ${new Date(data.fetched_at).toLocaleTimeString()}` : ""}
-        </span>
-      </div>
-      <p className="text-xs text-slate-500">{T.tbSub}</p>
-      <div className="grid md:grid-cols-3 gap-3">
+      {offline && <p className="text-xs text-amber-700">⚠ {T.tbOffline}</p>}
+      <div className="grid md:grid-cols-2 gap-3">
         <div className="rounded-xl border bg-white p-3 shadow-sm">
           <p className="text-sm font-semibold mb-1">{T.tbClients}</p>
           {(data?.clients || []).length === 0 && <p className="text-xs text-slate-500">{T.tbNone}</p>}
           <ul className="space-y-1.5 text-xs">{(data?.clients || []).map((c, i) => (
             <li key={i}><b>{c.name}</b> <span className="text-slate-400">{c.phone}</span><br />{[c.case_type, c.benefit_sought, c.language].filter(Boolean).join(" · ")}{c.status ? ` · ${c.status}` : ""}{c.next_hearing ? ` · ${T.tbHearing} ${c.next_hearing}` : ""}</li>
-          ))}</ul>
-        </div>
-        <div className="rounded-xl border bg-white p-3 shadow-sm">
-          <p className="text-sm font-semibold mb-1">{T.tbQueue}</p>
-          {(data?.queue || []).length === 0 && <p className="text-xs text-slate-500">{T.tbNone}</p>}
-          <ul className="space-y-1.5 text-xs">{(data?.queue || []).slice(0, 8).map((q, i) => (
-            <li key={q.id || i}>{q.question} <span className="text-slate-400">· {q.status} · {q.created_at ? new Date(q.created_at).toLocaleString() : ""}</span></li>
           ))}</ul>
         </div>
         <div className="rounded-xl border bg-white p-3 shadow-sm">
@@ -205,6 +192,8 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
   const inviteText = invite
     ? `Hola ${invite.first_name}, soy de ${provider?.whatsapp_display_name || "la oficina de su abogado/a"}. Para mandarnos sus documentos por WhatsApp, escriba a +1 978-991-5607 el código ${invite.invite_code}. Nosotros revisamos todo; no es un mensaje del gobierno.`
     : "";
+  const inviteFor = (c) =>
+    `Hola ${c.first_name}, soy de ${provider?.whatsapp_display_name || "la oficina de su abogado/a"}. Para mandarnos sus documentos por WhatsApp, escriba a +1 978-991-5607 el código ${c.invite_code}. Nosotros revisamos todo; no es un mensaje del gobierno.`;
   const waLink = invite ? `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(invite.invite_code)}` : "";
 
   return (
@@ -300,7 +289,15 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
                       <span className={`text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap ${pill}`}>{label}</span>
                       {flags > 0 && <span className="flex items-center gap-0.5 text-xs text-amber-700"><AlertTriangle className="w-3.5 h-3.5" />{flags}</span>}
                     </div>
-                    <div className="col-span-3 flex justify-end gap-1.5">
+                    <div className="col-span-3 flex justify-end gap-1.5 flex-wrap">
+                      <a href={`https://wa.me/?text=${encodeURIComponent(inviteFor(c))}`} target="_blank" rel="noreferrer"
+                        title={T.inviteWa} className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md border border-emerald-300 text-emerald-800 bg-emerald-50">
+                        <MessageCircle className="w-3.5 h-3.5" /> {T.inviteWa}
+                      </a>
+                      {c.phone && (
+                        <a href={`https://wa.me/${String(c.phone).replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md border">{T.messageWa}</a>
+                      )}
                       <button disabled={!!busy || !k || ["wiped", "delivered"].includes(c.status)}
                         onClick={() => act("deliver", { action: "deliver", case_id: k.id }, T.confirmDeliver(c.first_name), () => exportPacket(c, k))}
                         className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-emerald-700 text-white disabled:opacity-30">
