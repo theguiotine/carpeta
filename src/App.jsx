@@ -170,6 +170,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
       <section className="max-w-6xl mx-auto px-4 mt-4">
         <div className="rounded-2xl border-2 border-emerald-700/30 bg-white p-6 shadow-md">
           <h2 className="text-2xl font-bold tracking-tight">Asistente del equipo (Roberto)</h2>
+          <span className="inline-block mt-1 text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-slate-900 text-white">Uso interno del equipo</span>
           <p className="text-base text-slate-600 mt-1">Pregúntele al agente del equipo sobre sus casos. Corre en el servidor FastAPI de Roberto; Carpeta lo llama por la función de Base44.</p>
           {chat.length > 0 && (
             <div className="mt-4 max-h-72 overflow-y-auto space-y-2 text-base">

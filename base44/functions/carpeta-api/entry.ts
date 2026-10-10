@@ -278,7 +278,7 @@ async function handler(req: Request): Promise<Response> {
     try {
       const res = await fetch(url, {
         method: "POST", headers: { "content-type": "application/json", "ngrok-skip-browser-warning": "1" },
-        body: JSON.stringify({ message: String(input.message || "").slice(0, 1000), attorney_id: "test" }),
+        body: JSON.stringify({ message: String(input.message ?? ""), attorney_id: "lic_garcia" }),
         signal: AbortSignal.timeout(25000),
       });
       const out = await res.json();
