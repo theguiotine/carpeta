@@ -47,6 +47,11 @@
     "name_on_documents": {
       "type": "string",
       "description": "Full name exactly as it appears on her documents, entered by the provider; used only for the name-match check"
+    },
+    "documents_visible_to_client": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the client can see her own document list (off by default)"
     }
   },
   "required": [

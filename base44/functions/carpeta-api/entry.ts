@@ -227,6 +227,34 @@ export default async function (req: Request): Promise<Response> {
     return ok({ reply_text: "Seeded 3 fictional clients", provider_id: provider.id });
   }
 
+  // ---------- invite a new client (from the paralegal page) ----------
+  if (action === "invite") {
+    const first = String(input.first_name || "").trim().split(/\s+/)[0].slice(0, 30);
+    if (!first) return fail("Falta el nombre.");
+    const provider = (await db.Provider.list())[0];
+    const ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let tries = 0; tries < 5; tries++) {
+      code = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => ALPH[b % ALPH.length]).join("");
+      if (!(await db.Client.filter({ invite_code: code })).length) break;
+    }
+    const client = await db.Client.create({
+      provider_id: provider?.id, first_name: first, invite_code: code, language: "es", status: "invited",
+      name_on_documents: String(input.name_on_documents || "").toUpperCase(), last_activity_at: now(),
+    });
+    const kase = await db.Case.create({
+      client_id: client.id, process_label: String(input.process_label || "Permiso de trabajo (asilo pendiente), I-765 (c)(8)"),
+      items_total: 12, items_received: 0,
+    });
+    await db.ChecklistItem.bulkCreate(ITEM_TEMPLATE.map((t, i) => ({
+      case_id: kase.id, order: i + 1, key: t[0], doc_type: t[1], label_es: t[2], label_en: t[3],
+      requested_by: t[4], how_to_get_es: howtoText(t[1], t[2]), required: true, type: "photo",
+      source_url: t[4] === "USCIS" ? USCIS_SOURCE : "", source_read_date: t[4] === "USCIS" ? SOURCE_READ : "",
+      status: "missing", retake_count: 0,
+    })));
+    return ok({ invite_code: code, first_name: first, reply_text: `Código para ${first}: ${code}` });
+  }
+
   // ---------- actions keyed by invite code (WhatsApp / web chat) or case id (provider page) ----------
   const ctx = input.case_id ? await loadByCase(String(input.case_id)) : await loadByCode(String(input.invite_code || ""));
   if (!ctx || !ctx.kase) return fail("No encontré ese código. Revíselo en el mensaje de su abogado/a.");
@@ -275,6 +303,18 @@ export default async function (req: Request): Promise<Response> {
     return ok({ reply_text: howtoText(pick.doc_type, pick.label_es) });
   }
 
+  if (action === "set_visible") {
+    await db.Client.update(client.id, { documents_visible_to_client: !!input.visible });
+    return ok({ reply_text: input.visible ? "Visible para el cliente" : "Oculto para el cliente" });
+  }
+
+  if (action === "resolve") {
+    const e = await db.Escalation.get(String(input.escalation_id || ""));
+    if (!e || e.case_id !== kase.id) return fail("No encontré esa alerta.");
+    await db.Escalation.update(e.id, { status: "closed" });
+    return ok({ reply_text: "Resuelto" });
+  }
+
   if (action === "refresh_howto") {
     const rows = await items(kase.id);
     for (const r of rows) await db.ChecklistItem.update(r.id, { how_to_get_es: howtoText(r.doc_type, r.label_es) });
@@ -295,6 +335,20 @@ export default async function (req: Request): Promise<Response> {
     const forced = input.item_number ? rows.find((r: any) => r.order === Number(input.item_number)) : null;
 
     let cls: any = input.cached_classification || null;
+    // Optional external classifier (e.g. the team's FastAPI service). Set the secret
+    // EXTERNAL_CLASSIFIER_URL; it receives {file_url, doc_types} and returns the same JSON shape.
+    const external = Deno.env.get("EXTERNAL_CLASSIFIER_URL");
+    if (!cls && !forced && external) {
+      try {
+        const res = await fetch(external, {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-carpeta-key": Deno.env.get("EXTERNAL_CLASSIFIER_KEY") || "" },
+          body: JSON.stringify({ file_url: fileUrl, doc_types: DOC_TYPES }),
+          signal: AbortSignal.timeout(20000),
+        });
+        if (res.ok) cls = await res.json();
+      } catch { /* fall back to InvokeLLM */ }
+    }
     if (!cls && !forced) {
       cls = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt:
