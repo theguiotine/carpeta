@@ -11,6 +11,7 @@ import { useLang, LangToggle } from "@/i18n";
 const db = base44.entities;
 const APP_URL = "https://carpeta-08916c4a.base44.app";
 const WA = "+1 978-991-5607";
+const WA_DEMO = "https://wa.me/19789915607?text=DEMO01"; // walk-up demo case, fictional
 const LIME = "#a3e635";
 
 const BOT_LINE = {
@@ -226,8 +227,8 @@ export default function Stage() {
 
       <footer className="fixed bottom-0 inset-x-0 flex items-center justify-between gap-6 px-12 py-3 bg-black/30 text-slate-300 text-sm">
         <div className="flex items-center gap-4">
-          <div className="bg-white p-1.5 rounded"><QRCodeSVG value={APP_URL} size={56} /></div>
-          <div><div className="text-white font-semibold">{T.tryIt} · {WA}</div><div className="text-slate-400 text-xs">{APP_URL.replace("https://", "")}</div></div>
+          <div className="bg-white p-2 rounded"><QRCodeSVG value={WA_DEMO} size={84} /></div>
+          <div><div className="text-white font-semibold text-base">{T.scanTry}</div><div className="text-slate-400 text-xs">{WA} · {T.demoCode} <b className="text-lime-300">DEMO01</b></div></div>
         </div>
         <div className="flex items-center gap-2">
           {d.clients.slice(0, 4).map((c) => (
