@@ -255,7 +255,7 @@ export default async function (req: Request): Promise<Response> {
     const when = kase.next_appointment
       ? new Date(kase.next_appointment).toLocaleString("es-US", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })
       : "";
-    let reply = `Lleva ${received} de ${total}.`;
+    let reply = `Ya tiene ${received} de ${total}.`;
     if (rest) reply += ` Faltan: ${rest}.`;
     if (action === "consent") reply += " Mándeme una foto a la vez, en una mesa, con buena luz.";
     if (when && input.include_appointment) reply += ` Su cita es el ${when}.`;
@@ -379,9 +379,9 @@ export default async function (req: Request): Promise<Response> {
     const { received, total } = await recount(kase.id);
     if (received >= total) {
       await db.Client.update(client.id, { status: "complete" });
-      return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. ¡Listo, ${received} de ${total}! Su abogado/a ya puede revisarlos. Para enviárselos ahora escriba ENTREGAR.` });
+      return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}: recibidos, falta que la oficina los revise. Para enviárselos ahora escriba ENTREGAR.` });
     }
-    return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Lleva ${received} de ${total}.` });
+    return ok({ received, total, reply_text: `✅ Recibido: ${openSlot.label_es}. Ya tiene ${received} de ${total}.` });
   }
 
   if (action === "deliver") {
@@ -397,10 +397,18 @@ export default async function (req: Request): Promise<Response> {
       return `<li>${r.order}. ${r.label_es} [${r.requested_by}]: <b>${r.status}</b>${r.sha256 ? ` · sha256 ${String(r.sha256).slice(0, 12)}…` : ""}${link}</li>`;
     }).join("");
     const esc = openEsc.map((e: any) => `<li>[${String(e.category).toUpperCase()}] ${e.summary_en || e.summary_es}</li>`).join("");
+    // Export before wipe: a dated log of every upload and what happened to it (kept by the provider).
+    const ny = (iso: string) => new Date(iso).toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "medium", timeStyle: "short" });
+    const log = [...docs].sort((a: any, b: any) => String(a.created_date).localeCompare(String(b.created_date))).map((d: any) => {
+      const slot = rows.find((r: any) => r.id === d.checklist_item_id);
+      return `<tr><td>${ny(d.created_date)}</td><td>${d.classified_as || ""}</td><td>${slot ? slot.label_en : "-"}</td><td>${d.outcome || ""}</td><td>${(d.quality_flags || []).join(", ")}</td><td><a href="${d.file_url}">image</a></td></tr>`;
+    }).join("");
     const body =
       `<p><b>Demo, datos ficticios.</b> Carpeta packet for ${client.first_name} (${kase.process_label}).</p>` +
       `<p>${received} of ${total} received.</p><ol>${lines}</ol>` +
       (esc ? `<p>Open questions and flags:</p><ul>${esc}</ul>` : "") +
+      `<p><b>Upload log</b> (every photo received, in order; export kept by the office before Carpeta deletes its copies):</p><table border="1" cellpadding="4" style="border-collapse:collapse;font-size:12px"><tr><th>Received (ET)</th><th>Classified as</th><th>Slot</th><th>Outcome</th><th>Photo flags</th><th>Image</th></tr>${log}</table>` +
+      `<p>Download the images from the links above before filing; Carpeta deletes its records after this email.</p>` +
       `<p>Fee note for the provider (I-765 (c)(8)): $560 if postmarked by Thu Oct 15 2026; $570 from Fri Oct 16 2026. Confirm on federalregister.gov.</p>` +
       `<p>For the paralegal: review the flags above. For the attorney: sign off before filing. Information, not legal advice; the attorney picks the process.</p>`;
     try {

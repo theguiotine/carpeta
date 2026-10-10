@@ -13,7 +13,7 @@ const STATUS_PILL = {
   delivered: "bg-violet-100 text-violet-800",
   wiped: "bg-zinc-200 text-zinc-600",
 };
-const STATUS_ES = { invited: "Invitado", active: "Activo", complete: "Completo", delivered: "Entregado", wiped: "Borrado" };
+const STATUS_ES = { invited: "Invitado", active: "Activo", complete: "Recibidos, revisar", delivered: "Entregado", wiped: "Borrado" };
 const ITEM_ICON = { missing: "⏳", received: "✅", needs_retake: "🔁", flagged: "🟡", delivered: "📨", wiped: "—" };
 const CAT = {
   emergency: ["EMERGENCY", "bg-red-600 text-white"],
