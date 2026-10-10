@@ -143,6 +143,7 @@ ${[...docs].sort((a, b) => String(a.created_date).localeCompare(String(b.created
           <p className="text-sm text-slate-500 mt-0.5">Paralegal inbox · clients send documents over WhatsApp, the paralegal reviews, the attorney signs off.</p>
           <p className="text-xs text-slate-500 mt-1">{provider ? `${provider.name} · ${provider.organization}` : ""}</p>
         </div>
+        <a href="/?stage" className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-700">▶ Modo presentación</a>
         <button onClick={load} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border bg-white hover:bg-slate-50">
           <RefreshCw className="w-4 h-4" /> Actualizar
         </button>
