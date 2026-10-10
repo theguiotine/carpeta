@@ -9,6 +9,9 @@ const DOCS = [
   ["T1-TRAP-paystub-other-name.png", "Trampa: otro nombre"], ["T2-TRAP-utility-bill-old.png", "Trampa: factura vieja"],
 ];
 
+const REAL = {"04-lease.png": "lease.png", "05-paystub-aug.png": "paystub-aug.png", "06-paystub-sep.png": "paystub-sep.png", "07-utility-bill-sep.png": "utility-bill.png"};
+const url = (f) => (REAL[f] ? `/samples/${REAL[f]}` : `/demo-docs/${f}`);
+
 export default function Docs() {
   return (
     <div className="min-h-screen bg-stone-50 p-4">
@@ -17,8 +20,8 @@ export default function Docs() {
       <p className="text-sm text-slate-600 mb-3">Toque uno, mantenga presionada la imagen y guárdela. Luego mándela a Carpeta por WhatsApp: <b>+1 978-991-5607</b>.</p>
       <div className="grid grid-cols-2 gap-3">
         {DOCS.map(([f, label]) => (
-          <a key={f} href={`/demo-docs/${f}`} className="block bg-white rounded-xl border overflow-hidden shadow-sm">
-            <img src={`/demo-docs/${f}`} alt={label} className="w-full h-32 object-cover" loading="lazy" />
+          <a key={f} href={url(f)} className="block bg-white rounded-xl border overflow-hidden shadow-sm">
+            <img src={url(f)} alt={label} className="w-full h-32 object-cover" loading="lazy" />
             <div className="text-xs font-medium p-2">{label}</div>
           </a>
         ))}

@@ -53,11 +53,13 @@ const REPLAY_ROWS = [
   ["prior_ead", "Permiso de trabajo anterior (si tiene)", "Prior work permit (if any)", "11-prior-EAD.png"],
   ["i589_copy", "Copia del I-589 (primera página)", "I-589 copy (first page)", "12-I-589-first-page.png"],
 ];
+const REAL = {"04-lease.png": "lease.png", "05-paystub-aug.png": "paystub-aug.png", "06-paystub-sep.png": "paystub-sep.png", "07-utility-bill-sep.png": "utility-bill.png"};
+const docUrl = (f) => (REAL[f] ? "/samples/" + REAL[f] : "/demo-docs/" + f);
 function replayData(step) {
   const t0 = Date.now() - 60000;
   const ts = (i) => new Date(t0 + i * 4000).toISOString();
   const items = REPLAY_ROWS.map((r, i) => ({ id: "r" + i, case_id: "rc", order: i + 1, doc_type: r[0], label_es: r[1], label_en: r[2], status: i < step ? "received" : "missing" }));
-  const docs = REPLAY_ROWS.slice(0, step).map((r, i) => ({ id: "d" + i, case_id: "rc", checklist_item_id: "r" + i, outcome: "accepted", file_url: "/demo-docs/" + r[3], created_date: ts(i) }));
+  const docs = REPLAY_ROWS.slice(0, step).map((r, i) => ({ id: "d" + i, case_id: "rc", checklist_item_id: "r" + i, outcome: "accepted", file_url: docUrl(r[3]), created_date: ts(i) }));
   const esc = step >= 6 ? [{ id: "e1", case_id: "rc", category: "legal_question", status: "open", summary_es: "¿Califico para la residencia? (pasado al abogado/a)", summary_en: "Does she qualify for a green card? (sent to the attorney)", created_date: ts(6) }] : [];
   return {
     clients: [{ id: "rcl", first_name: "Esteban", invite_code: "MARIA1", linked_at: ts(-2), consent_at: ts(-1) }],
@@ -85,7 +87,7 @@ export default function Stage() {
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
     if (!IS_REPLAY) return;
-    REPLAY_ROWS.forEach((r) => { const im = new Image(); im.src = "/demo-docs/" + r[3]; }); // preload
+    REPLAY_ROWS.forEach((r) => { const im = new Image(); im.src = docUrl(r[3]); }); // preload
     const start = (e) => { if (!e || e.type === "click" || e.code === "Space") { setPlaying(true); setStep(0); } };
     window.addEventListener("keydown", start);
     window.addEventListener("click", start);
